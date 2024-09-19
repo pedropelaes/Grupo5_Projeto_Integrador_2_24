@@ -1,0 +1,23 @@
+{
+  "name": "japa_bet",
+  "version": "1.0.0",
+  "description": "Grupo 5- Projeto Integrador Segundo Semestre Eng. Software WEB",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedropelaes/Grupo5_Projeto_Integrador_2_24.git"
+  },
+  "author": "Daniel Jange, Guilherme Padilha, Igor Cunha, Pedro Facine, Pedro Pelaes",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pedropelaes/Grupo5_Projeto_Integrador_2_24/issues"
+  },
+  "homepage": "https://github.com/pedropelaes/Grupo5_Projeto_Integrador_2_24#readme",
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "typescript": "^5.6.2"
+  }
+}
