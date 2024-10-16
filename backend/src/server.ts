@@ -14,9 +14,16 @@ routes.get('/', (req: Request, res: Response)=>{
     res.send('Acesso não permitido. Rota default não definida.');
 });
 
+routes.get('/login',AccountsManager.loginHandler, (req: Request, res: Response)=>{
+    res.statusCode = 200;
+    res.send('Aaadsadida.');
+    AccountsManager.loginHandler
+});
+
+
 // vamos organizar as rotas em outro local 
-routes.put('/signUp', AccountsManager.signUpHandler);
-routes.post('/login', /*handler */);
+// routes.put('/signUp', AccountsManager.signUpHandler);
+routes.post('/login',AccountsManager.loginHandler);
 routes.post('/addNewEvent', /*handler */);
 routes.post('/getEvents', /*handler */);
 routes.post('/deleteEvent', /*handler */);
@@ -26,6 +33,7 @@ routes.post('/withdrawFunds', /*handler */);
 routes.post('/betOnEvent', /*handler */);
 routes.post('/finishEvent', /*handler */);
 routes.post('/searchEvent', /*handler */);
+routes.get("/teste")
 
 
 server.use(routes);

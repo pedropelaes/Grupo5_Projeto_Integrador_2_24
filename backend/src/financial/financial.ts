@@ -52,7 +52,7 @@ export namespace FinancialManager{
     }
 
     export const getWalletBalanceHandler: RequestHandler = (req: Request, res: Response) => {
-        //implementar
+        //implementarx'x'x'
     }
     /* 
     Ex1. Implementar o tratador da rota de saldo
