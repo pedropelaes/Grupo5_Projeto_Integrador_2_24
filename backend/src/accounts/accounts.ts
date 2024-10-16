@@ -6,93 +6,87 @@ import OracleDB from "oracledb";
 */
 export namespace AccountsManager {
     
-    /**
-     * Tipo UserAccount
-     */
-    /*export type UserAccount = {
-        name:string;
-        email:string;
-        password:string;
-        birthdate:string; 
+    export type conta_usuario={
+        user_id: number | undefined,
+        email: string,
+        nome: string,
+        senha: string,
+        data_nasc: string
     };
-*/
 
-export type UserAccount = {
-    id:number| undefined;
-    name:string;
-    email:string;
-    password:string;
-    birthdate:string;
-};
-    // Array que representa uma coleção de contas. 
-    let accountsDatabase: UserAccount[] = [];
-
-    /**
-     * Salva uma conta no banco de dados. 
-     * @param ua conta de usuário do tipo @type {UserAccount}
-     * @returns @type { number } o código da conta cadastrada como posição no array.
-     */
-    export function saveNewAccount(ua: UserAccount) : number{
-        accountsDatabase.push(ua);
-        return accountsDatabase.length;
+    export async function salvarconta(ua: conta_usuario){
+        let connection = await OracleDB.getConnection({
+            user: "PEDRO",
+            password:"07111",
+            connectionString:"localhost/XEPDB1"
+        })
+    
+        let cadastrocontas = await connection.execute(
+            "INSERT INTO USUARIO(ID_USUARIO, EMAIL,NOME, SENHA,DATA_NASCIMENTO) VALUES(:user_id, :email, :nome, :senha, TO_DATE(:data_nasc, 'YYYY-MM-DD'))",
+            {
+                user_id:ua.user_id,
+                email: ua.email,
+                nome: ua.nome,
+                senha: ua.senha,
+                data_nasc: ua.data_nasc
+            },
+        )
+        connection.commit()
+        console.log("Conta cadastrada. ", cadastrocontas);
     }
-
-    /**
-     * Função para tratar a rota HTTP /signUp. 
-     * @param req Requisição http tratada pela classe @type { Request } do express
-     * @param res    Resposta http a ser enviada para o cliente @type { Response }
-     */
-
-    /*
+    
     export const signUpHandler: RequestHandler = (req: Request, res: Response) => {
-        console.log('chegamos no log')
         // Passo 1 - Receber os parametros para criar a conta
+        const pId = req.get('id');
         const pName = req.get('name');
         const pEmail = req.get('email');
-        const pPassword = req.get('password');
+        const pSenha = req.get('senha');
         const pBirthdate = req.get('birthdate');
         
-        if(pName && pEmail && pPassword && pBirthdate){
+        const idusuario = pId ? parseInt(pId, 10): undefined; //req.get pega uma string, logo é necessario converter o id para int
+        
+        if(pName && pEmail && pSenha && idusuario && pBirthdate){
             // prosseguir com o cadastro... 
-            const newAccount: UserAccount = {
-                name: pName,
+            const newAccount: conta_usuario = {
+                user_id: idusuario,
                 email: pEmail, 
-                password: pPassword,
-                birthdate: pBirthdate
+                nome: pName,
+                senha: pSenha,
+                data_nasc: pBirthdate
             }
-            const ID = saveNewAccount(newAccount);
+            salvarconta(newAccount);
             res.statusCode = 200; 
-            res.send(`Nova conta adicionada. Código: ${ID}`);
+            res.send(`Nova conta cadastrada. Id da conta: ${newAccount.user_id} `);
         }else{
             res.statusCode = 400;
             res.send("Parâmetros inválidos ou faltantes.");
         }
     }
-    */
 
-     async function login(email:string, password:string) {
+    async function login(email:string, senha:string) {
         //Ajustando a saida para objetos JS.
         OracleDB.outFormat = OracleDB.OUT_FORMAT_OBJECT;
 
         let connection = await OracleDB.getConnection({
-            user: "System",
-            password:"995104006",
-            connectionString:"localhost/orlc"
+            user: "PEDRO",
+            password:"07111",
+            connectionString:"localhost/XEPDB1"
         })
 
         let accountsRows = await connection.execute(
-            'SELECT * FROM ACCOUNTS WHERE EMAIL = :email AND PASSWORD = :password',
-            [email,password]
+            'SELECT * FROM USUARIO WHERE EMAIL = :email AND SENHA = :senha',
+            [email,senha]
 
         )
-            //imprimindo o que veio do oracle
+    //imprimindo o que veio do oracle
     console.dir(accountsRows.rows)
+    console.log(email, senha);
 
     }
 export const loginHandler: RequestHandler = async (req:Request,res:Response)=>{
     //obtendo os parametros queestao no header da requissição (req)
     const pEmail=req.get('email');
-    const pPassword = req.get('password')
+    const pPassword = req.get('senha');
 
     // se as constantes pEmail e pPassword estão definidas (diferentes de undefined)
     //faz o login...

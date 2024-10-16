@@ -3,6 +3,7 @@ import {Request, Response, Router} from "express";
 import { AccountsManager } from "./accounts/accounts";
 import { FinancialManager } from "./financial/financial";
 
+
 const port = 3000; 
 const server = express();
 const routes = Router();
@@ -23,6 +24,7 @@ routes.get('/login',AccountsManager.loginHandler, (req: Request, res: Response)=
 
 // vamos organizar as rotas em outro local 
 // routes.put('/signUp', AccountsManager.signUpHandler);
+routes.post('/signUp', AccountsManager.signUpHandler);
 routes.post('/login',AccountsManager.loginHandler);
 routes.post('/addNewEvent', /*handler */);
 routes.post('/getEvents', /*handler */);
