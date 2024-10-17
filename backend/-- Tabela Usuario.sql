@@ -7,6 +7,9 @@ CREATE TABLE Usuario (
     data_nascimento DATE NOT NULL      -- Data de nascimento
 );
 
+CREATE SEQUENCE SEQ_ACCOUNTS START WITH 1
+INCREMENT BY 1;
+
 -- Tabela Wallet
 CREATE TABLE Wallet (
     id_wallet INT PRIMARY KEY,         -- Chave primária
@@ -14,6 +17,8 @@ CREATE TABLE Wallet (
     id_usuario INT NOT NULL,           -- FK para Usuario
     CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
 );
+CREATE SEQUENCE SEQ_WALLET START WITH 1
+INCREMENT BY 1;
 
 -- Tabela Eventos
 CREATE TABLE Eventos (
@@ -27,6 +32,8 @@ CREATE TABLE Eventos (
     valorCota INT NOT NULL,             -- Valor da cota
     quantidadeCotas INT NOT NULL
 );
+CREATE SEQUENCE SEQ_EVENTS START WITH 1
+INCREMENT BY 1;
 
 -- Tabela HistoricoTransacao
 CREATE TABLE HistoricoTransacao (
@@ -37,6 +44,9 @@ CREATE TABLE HistoricoTransacao (
     valor NUMBER(10, 2) NOT NULL,       -- Valor da transação
     CONSTRAINT fk_walletTrans FOREIGN KEY (id_wallet) REFERENCES Wallet(id_wallet)
 );
+
+CREATE SEQUENCE SEQ_TRANSACAO START WITH 1
+INCREMENT BY 1;
 
 -- Tabela HistoricoApostas
 CREATE TABLE HistoricoApostas (
@@ -50,6 +60,8 @@ CREATE TABLE HistoricoApostas (
     CONSTRAINT fk_eventoAposta FOREIGN KEY (id_evento) REFERENCES Eventos(id_evento),
     CONSTRAINT fk_walletAposta FOREIGN KEY (id_wallet) REFERENCES Wallet(id_wallet)
 );
+CREATE SEQUENCE SEQ_APOSTA START WITH 1
+INCREMENT BY 1;
 
 -- Tabela Moderador
 CREATE TABLE Moderador (
@@ -59,3 +71,5 @@ CREATE TABLE Moderador (
     senha VARCHAR2(100) NOT NULL,        -- Senha do moderador
     data_nascimento DATE NOT NULL        -- Data de nascimento
 );
+CREATE SEQUENCE SEQ_MODERADOR START WITH 1
+INCREMENT BY 1;

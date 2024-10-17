@@ -2,6 +2,7 @@ import express from "express";
 import {Request, Response, Router} from "express";
 import { AccountsManager } from "./accounts/accounts";
 import { FinancialManager } from "./financial/financial";
+import { eventsManager } from "./events/events";
 
 
 const port = 3000; 
@@ -26,10 +27,10 @@ routes.get('/login',AccountsManager.loginHandler, (req: Request, res: Response)=
 // routes.put('/signUp', AccountsManager.signUpHandler);
 routes.post('/signUp', AccountsManager.signUpHandler);
 routes.post('/login',AccountsManager.loginHandler);
-routes.post('/addNewEvent', /*handler */);
-routes.post('/getEvents', /*handler */);
-routes.post('/deleteEvent', /*handler */);
-routes.post('/evaluateNewEvent', /*handler */);
+routes.post('/addNewEvent', eventsManager.createEventHandler);
+routes.post('/getEvents', eventsManager.getEventHandler);
+routes.post('/deleteEvent', eventsManager.deleteEventHandler);
+routes.post('/evaluateNewEvent', eventsManager.evaluateNewEventHandler);
 routes.post('/addFunds', /*handler */);
 routes.post('/withdrawFunds', /*handler */);
 routes.post('/betOnEvent', /*handler */);
