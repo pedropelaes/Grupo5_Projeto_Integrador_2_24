@@ -3,6 +3,7 @@ import OracleDB from "oracledb";
 import dotenv from 'dotenv';
 import { getActiveResourcesInfo } from "process";
 import { escape } from "querystring";
+import conexao from "../connection";
 dotenv.config();
 
 //usar códigos para status
@@ -20,11 +21,9 @@ export namespace eventsManager {
     }
     
     export async function salvarevento(event: event){
-        let connection = await OracleDB.getConnection({
-            user: process.env.ORACLE_USER,
-            password: process.env.ORACLE_PASSWORD,
-            connectString: process.env.ORACLE_CONN_STR
-        })
+
+
+      const connection= await conexao()
 
         let criareventos = await connection.execute(
             `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATAINICIO, DATAFIM, DATAEVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS) 
@@ -50,7 +49,7 @@ export namespace eventsManager {
         const eDataEvento = req.get("dataevento");
         const eValorCota = req.get("cota");
 
-        const VC = eValorCota ? parseInt(eValorCota, 10): undefined; //converte a requisição do valor da cota para numero
+        const VC = eValorCota ? parseInt(eValorCota, 10): undefined; //converte a requisição do valor da cota para numero   
         
         if(eTitulo && eDesc && eDataInicio && eDataFim && eDataEvento  && VC !== undefined && VC > 1){
             const novoevento:event = {
