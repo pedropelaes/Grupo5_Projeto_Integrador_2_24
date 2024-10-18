@@ -2,6 +2,7 @@ import {Request, RequestHandler, Response} from "express";
 import OracleDB from "oracledb";
 import dotenv from 'dotenv';
 dotenv.config();
+import conexao from "../connection";
 
 /*
     Nampespace que contém tudo sobre "contas de usuários"
@@ -17,11 +18,7 @@ export namespace AccountsManager {
     };
 
     export async function salvarconta(ua: conta_usuario){
-        let connection = await OracleDB.getConnection({
-            user: process.env.ORACLE_USER,
-            password: process.env.ORACLE_PASSWORD,
-            connectString: process.env.ORACLE_CONN_STR
-        })
+        const connection= await conexao()
     
         let cadastrocontas = await connection.execute(
             "INSERT INTO USUARIO(ID_USUARIO, EMAIL,NOME, SENHA,DATA_NASCIMENTO) VALUES(SEQ_ACCOUNTS.NEXTVAL, :email, :nome, :senha, TO_DATE(:data_nasc, 'YYYY-MM-DD'))",
@@ -69,11 +66,7 @@ export namespace AccountsManager {
         //Ajustando a saida para objetos JS.
         OracleDB.outFormat = OracleDB.OUT_FORMAT_OBJECT;
 
-        let connection = await OracleDB.getConnection({
-            user: process.env.ORACLE_USER,
-            password: process.env.ORACLE_PASSWORD,
-            connectString: process.env.ORACLE_CONN_STR
-        })
+        const connection= await conexao()
 
         let accountsRows = await connection.execute(
             'SELECT * FROM USUARIO WHERE EMAIL = :email AND SENHA = :senha',

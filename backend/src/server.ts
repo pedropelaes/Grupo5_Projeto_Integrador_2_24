@@ -24,14 +24,13 @@ routes.get('/login',AccountsManager.loginHandler, (req: Request, res: Response)=
 
 
 // vamos organizar as rotas em outro local 
-// routes.put('/signUp', AccountsManager.signUpHandler);
 routes.post('/signUp', AccountsManager.signUpHandler);
 routes.post('/login',AccountsManager.loginHandler);
 routes.post('/addNewEvent', eventsManager.createEventHandler);
 routes.post('/getEvents', eventsManager.getEventHandler);
 routes.post('/deleteEvent', eventsManager.deleteEventHandler);
 routes.post('/evaluateNewEvent', eventsManager.evaluateNewEventHandler);
-routes.post('/addFunds', /*handler */);
+routes.post('/addFunds', FinancialManager.addFundsHandler);
 routes.post('/withdrawFunds', /*handler */);
 routes.post('/betOnEvent', /*handler */);
 routes.post('/finishEvent', /*handler */);

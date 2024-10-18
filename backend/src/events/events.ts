@@ -72,11 +72,7 @@ export namespace eventsManager {
     }
 
     export async function getEvent(busca: string, req:string): Promise<event[] | null>{
-        let connection = await OracleDB.getConnection({
-            user: process.env.ORACLE_USER,
-            password: process.env.ORACLE_PASSWORD,
-            connectString: process.env.ORACLE_CONN_STR
-        })
+        const connection= await conexao()
         let buscarevento;
         if(req === "status"){
             buscarevento = await connection.execute(
@@ -122,11 +118,7 @@ export namespace eventsManager {
     }
 
     export async function deletarEvento(titulo: string){
-        let connection = await OracleDB.getConnection({
-            user: process.env.ORACLE_USER,
-            password: process.env.ORACLE_PASSWORD,
-            connectString: process.env.ORACLE_CONN_STR
-        })
+        const connection= await conexao()
         const apagarEvento = await connection.execute(
             `UPDATE EVENTOS 
                 SET STATUS = 'Apagado' 
@@ -152,11 +144,7 @@ export namespace eventsManager {
     }
 
     export async function evaluateEvent(titulo:string, evaluate:string){
-        let connection = await OracleDB.getConnection({
-            user: process.env.ORACLE_USER,
-            password: process.env.ORACLE_PASSWORD,
-            connectString: process.env.ORACLE_CONN_STR
-        })
+        const connection= await conexao()
         if(evaluate === "aprovado"){
             const avaliarEvento = await connection.execute(
                 `UPDATE EVENTOS 
