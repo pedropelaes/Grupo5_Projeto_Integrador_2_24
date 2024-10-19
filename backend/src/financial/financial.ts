@@ -3,6 +3,7 @@ import OracleDB from "oracledb";
 import dotenv from "dotenv";
 dotenv.config();
 import conexao from "../connection";
+import { unescape } from "querystring";
 /*
 tudo dentro desse módulo irá tratar de finanças na plataforma. Ex: 
 Saldo de carteira, transferir dinheiro, 
@@ -92,6 +93,69 @@ export namespace FinancialManager{
                 const saldo = await addFunds(newWallet);
                 res.statusCode = 200;
                 res.send(`Carteira criada e saldo alterado. Adicionado ${saldo}`)
+            }
+        }else{
+            res.statusCode = 400;
+            res.send("Parâmetros inválidos ou faltantes.");
+        }
+    }
+
+    export async function withdrawnFunds(wallet_id: number, valor: number): Promise<number | null>{
+        const connection = await conexao();
+        const checarFundos = await connection.execute(
+            `SELECT SALDO FROM WALLET WHERE ID_WALLET = :wallet_id`,
+            {wallet_id: wallet_id}
+        );
+
+        const saldoConta = (checarFundos.rows as any)[0][0];
+
+        if(saldoConta !== undefined && saldoConta >= valor){
+            let retirarFundos = await connection.execute(
+                `UPDATE WALLET
+                    SET SALDO = SALDO - :valor
+                    WHERE ID_WALLET = :wallet_id`,
+                    {
+                        valor: valor,
+                        wallet_id: wallet_id
+                    }
+            )
+            connection.commit();
+            if(valor <= 100){
+                valor = valor - (valor*0.04);
+                console.log("Taxa: 4%"); 
+            }else if(valor <=1000){
+                valor = valor - (valor*0.03);
+                console.log("Taxa: 3%"); 
+            }else if(valor <=5000){
+                valor = valor - (valor*0.02);
+                console.log("Taxa: 2%"); 
+            }else if(valor <=100000){
+                valor = valor - (valor*0.01);
+                console.log("Taxa: 1%"); 
+            }
+
+            console.log(`Valor sacado: ${valor}| Id da carteira: ${wallet_id}.` );
+            return valor;
+        }else{
+            console.log(`Impossivel sacar, saldo insuficiente.`);
+            return null;
+        }
+    } 
+    
+    export const withdrawFundsHandler: RequestHandler = async (req: Request, res: Response) => {
+        const wValue = req.get("valor");
+        const wIdWallet = req.get("id_carteira");
+
+        const valor = wValue ? parseFloat(wValue): undefined;
+        const id = wIdWallet ? parseInt(wIdWallet, 10): undefined;
+
+        if (valor && id){
+            const saldoRetirado = await withdrawnFunds(id, valor);
+            res.statusCode = 200;
+            if(saldoRetirado !== null){
+                res.send(`Fundos retirados. Valor: ${saldoRetirado}`);
+            }else{
+                res.send(`Erro ao retirar fundos.`)
             }
         }else{
             res.statusCode = 400;
