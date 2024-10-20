@@ -1,75 +1,98 @@
--- Tabela Usuario
-CREATE TABLE Usuario (
-    id_usuario INT PRIMARY KEY,        -- Chave primária (ajustado conforme o pedido)
-    email VARCHAR2(255) NOT NULL UNIQUE,      -- Campo email como string (único)
-    nome VARCHAR2(100) NOT NULL,       -- Nome do usuário
-    senha VARCHAR2(255) NOT NULL,      -- senha
-    data_nascimento DATE NOT NULL      -- Data de nascimento
+-- Criar sequências para cada tabela
+CREATE SEQUENCE SEQ_USUARIO START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_EVENTO START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_WALLET START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_HIST_TRANSACAO START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_HIST_APOSTAS START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_MODERADOR START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_APOSTA START WITH 1 INCREMENT BY 1;
+
+
+-- Tabela USUARIO
+CREATE TABLE USUARIO (
+    ID_USUARIO INT PRIMARY KEY,
+    EMAIL VARCHAR2(150) NOT NULL UNIQUE,  -- Atualizado para 150 caracteres
+    NOME VARCHAR2(100) NOT NULL,           -- Atualizado para 100 caracteres
+    SENHA VARCHAR2(50) NOT NULL,           -- Atualizado para 50 caracteres
+    DATA_NASCIMENTO DATE NOT NULL
 );
 
-CREATE SEQUENCE SEQ_ACCOUNTS START WITH 1
-INCREMENT BY 1;
-
--- Tabela Wallet
-CREATE TABLE Wallet (
-    id_wallet INT PRIMARY KEY,         -- Chave primária
-    saldo NUMBER(10, 2) NOT NULL,      -- Saldo da wallet
-    id_usuario INT NOT NULL,           -- FK para Usuario
-    CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
-);
-CREATE SEQUENCE SEQ_WALLET START WITH 1
-INCREMENT BY 1;
-
--- Tabela Eventos
-CREATE TABLE Eventos (
-    id_evento INT PRIMARY KEY,          -- Chave primária
-    titulo VARCHAR2(50) NOT NULL,       -- Título do evento
-    descricao VARCHAR2(150) NOT NULL,   -- Descrição do evento
-    dataInicio DATE NOT NULL,           -- Data de início
-    dataFim DATE NOT NULL,              -- Data de término
-    dataEvento DATE NOT NULL,           -- Data do evento
-    status VARCHAR2(30) NOT NULL,       -- Status do evento
-    valorCota INT NOT NULL,             -- Valor da cota
-    quantidadeCotas INT NOT NULL
-);
-CREATE SEQUENCE SEQ_EVENTS START WITH 1
-INCREMENT BY 1;
-
--- Tabela HistoricoTransacao
-CREATE TABLE HistoricoTransacao (
-    id_transacao INT PRIMARY KEY,       -- Chave primária
-    id_wallet INT NOT NULL,              -- FK para Wallet
-    data_transacao DATE NOT NULL,       -- Data da transação
-    hora_transacao TIMESTAMP NOT NULL,  -- Hora da transação
-    valor NUMBER(10, 2) NOT NULL,       -- Valor da transação
-    CONSTRAINT fk_walletTrans FOREIGN KEY (id_wallet) REFERENCES Wallet(id_wallet)
+-- Tabela EVENTOS
+CREATE TABLE EVENTOS (
+    ID_EVENTO INT PRIMARY KEY,
+    TITULO VARCHAR2(50) NOT NULL,
+    DESCRICAO VARCHAR2(150) NOT NULL,
+    DATA_INICIO DATE NOT NULL,
+    DATA_FIM DATE NOT NULL,
+    STATUS VARCHAR2(255) NOT NULL,
+    TOTAL_APOSTA INT NOT NULL,               -- Substituído VALOR_COTA por TOTAL_APOSTA
+    RESULTADO_EVENTO CHAR(1)                 -- Novo campo, pode ser nulo ou não
 );
 
-CREATE SEQUENCE SEQ_TRANSACAO START WITH 1
-INCREMENT BY 1;
-
--- Tabela HistoricoApostas
-CREATE TABLE HistoricoApostas (
-    id_aposta INT PRIMARY KEY,          -- Chave primária
-    id_evento INT NOT NULL,             -- FK para Eventos
-    id_wallet INT NOT NULL,              -- FK para Wallet
-    data_aposta DATE NOT NULL,          -- Data da aposta
-    hora_aposta TIMESTAMP NOT NULL,     -- Hora da aposta
-    valor NUMBER(10, 2) NOT NULL,       -- Valor da aposta
-    opcao_aposta int NOT NULL,      -- Opção da aposta (Sim/Não)
-    CONSTRAINT fk_eventoAposta FOREIGN KEY (id_evento) REFERENCES Eventos(id_evento),
-    CONSTRAINT fk_walletAposta FOREIGN KEY (id_wallet) REFERENCES Wallet(id_wallet)
+-- Tabela WALLET
+CREATE TABLE WALLET (
+    ID_WALLET INT PRIMARY KEY,
+    SALDO NUMBER(10, 2) NOT NULL
 );
-CREATE SEQUENCE SEQ_APOSTA START WITH 1
-INCREMENT BY 1;
 
--- Tabela Moderador
-CREATE TABLE Moderador (
-    id_moderador INT PRIMARY KEY,        -- Chave primária
-    email VARCHAR2(255) NOT NULL UNIQUE, -- Email do moderador (único)
-    nome VARCHAR2(100) NOT NULL,         -- Nome do moderador
-    senha VARCHAR2(100) NOT NULL,        -- Senha do moderador
-    data_nascimento DATE NOT NULL        -- Data de nascimento
+
+-- Tabela HISTORICO_APOSTAS
+CREATE TABLE HISTORICO_APOSTAS (
+    ID_APOSTA INT PRIMARY KEY,
+    ID_EVENTO INT NOT NULL,      -- Chave estrangeira para EVENTOS
+    ID_WALLET INT NOT NULL,      -- Chave estrangeira para WALLET
+    HORA_APOSTA TIMESTAMP NOT NULL,
+    DATA_APOSTA DATE NOT NULL,
+    VALOR NUMBER(10, 2) NOT NULL,
+    OPCAO_APOSTA CHAR(1) NOT NULL,  -- 'Y' ou 'N'
+    FOREIGN KEY (ID_EVENTO) REFERENCES EVENTOS(ID_EVENTO),
+    FOREIGN KEY (ID_WALLET) REFERENCES WALLET(ID_WALLET)
 );
-CREATE SEQUENCE SEQ_MODERADOR START WITH 1
-INCREMENT BY 1;
+
+-- Tabela HISTORICO_TRANSACAO
+CREATE TABLE HISTORICO_TRANSACAO (
+    ID_TRANSACAO INT PRIMARY KEY,
+    ID_WALLET INT NOT NULL,      -- Chave estrangeira para WALLET
+    DATA_TRANSACAO DATE NOT NULL,
+    HORA_TRANSACAO TIMESTAMP NOT NULL,
+    VALOR NUMBER(10, 2) NOT NULL,
+    FOREIGN KEY (ID_WALLET) REFERENCES WALLET(ID_WALLET)
+);
+
+
+-- Tabela WALLET (agora com FK)
+ALTER TABLE WALLET
+ADD ID_HIST_APOSTA INT; -- Chave estrangeira para Histórico de Apostas
+
+ALTER TABLE WALLET
+ADD ID_HIST_TRANSACAO INT;   -- Chave estrangeira para Histórico de Transações
+
+ALTER TABLE WALLET
+ADD FOREIGN KEY (ID_HIST_APOSTA) REFERENCES HISTORICO_APOSTAS(ID_APOSTA);
+
+ALTER TABLE WALLET
+ADD FOREIGN KEY (ID_HIST_TRANSACAO) REFERENCES HISTORICO_TRANSACAO(ID_TRANSACAO);
+
+
+
+-- Tabela MODERADOR
+CREATE TABLE MODERADOR (
+    ID_MODERADOR INT PRIMARY KEY,
+    EMAIL VARCHAR2(150) NOT NULL UNIQUE,  -- Atualizado para 150 caracteres
+    NOME VARCHAR2(100) NOT NULL,           -- Atualizado para 100 caracteres
+    SENHA VARCHAR2(50) NOT NULL,           -- Atualizado para 50 caracteres
+    DATA_NASCIMENTO DATE NOT NULL
+);
+
+
+CREATE TABLE APOSTA(
+    ID_APOSTA INT PRIMARY KEY,
+    ID_USUARIO INT NOT NULL,
+    ID_EVENTO INT NOT NULL,
+    DATA_APOSTA DATE NOT NULL,
+    FOREIGN KEY (ID_USUARIO) REFERENCES USUARIO(ID_USUARIO),
+    FOREIGN KEY (ID_EVENTO) REFERENCES EVENTOS(ID_EVENTO)
+);
+
+ALTER TABLE APOSTA
+MODIFY DATA_APOSTA NULL;

@@ -22,8 +22,7 @@ export namespace eventsManager {
     
     export async function salvarevento(event: event){
 
-
-      const connection= await conexao()
+    const connection= await conexao()
 
         let criareventos = await connection.execute(
             `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATAINICIO, DATAFIM, DATAEVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS) 
