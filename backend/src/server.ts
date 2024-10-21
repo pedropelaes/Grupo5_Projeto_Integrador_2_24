@@ -35,7 +35,6 @@ routes.post('/withdrawFunds', FinancialManager.withdrawFundsHandler);
 routes.post('/betOnEvent', /*handler */);
 routes.post('/finishEvent', /*handler */);
 routes.post('/searchEvent', /*handler */);
-routes.get("/teste")
 
 
 server.use(routes);

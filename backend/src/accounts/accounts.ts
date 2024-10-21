@@ -18,8 +18,11 @@ export namespace AccountsManager {
     };
 
     export async function salvarconta(ua: conta_usuario){
+        console.log("CHEGOOUUU")
+
         const connection= await conexao()
-    
+        console.log("ebaaa")
+
         let cadastrocontas = await connection.execute(
             "INSERT INTO USUARIO(ID_USUARIO, EMAIL,NOME, SENHA,DATA_NASCIMENTO) VALUES(SEQ_ACCOUNTS.NEXTVAL, :email, :nome, :senha, TO_DATE(:data_nasc, 'YYYY-MM-DD'))",
             {
