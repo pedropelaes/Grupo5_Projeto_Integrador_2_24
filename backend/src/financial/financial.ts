@@ -109,7 +109,7 @@ export namespace FinancialManager{
 
         const saldoConta = (checarFundos.rows as any)[0][0];
 
-        if(saldoConta !== undefined && saldoConta >= valor){
+        if(saldoConta !== undefined && saldoConta >= valor && valor <= 101000){
             let retirarFundos = await connection.execute(
                 `UPDATE WALLET
                     SET SALDO = SALDO - :valor
@@ -136,6 +136,9 @@ export namespace FinancialManager{
 
             console.log(`Valor sacado: ${valor}| Id da carteira: ${wallet_id}.` );
             return valor;
+        }else if(saldoConta !== undefined && saldoConta >= valor && valor > 101000){
+            console.log(`Valor limite de saque excedido. Valor:${valor}`);
+            return valor;
         }else{
             console.log(`Impossivel sacar, saldo insuficiente.`);
             return null;
@@ -152,8 +155,10 @@ export namespace FinancialManager{
         if (valor && id){
             const saldoRetirado = await withdrawnFunds(id, valor);
             res.statusCode = 200;
-            if(saldoRetirado !== null){
-                res.send(`Fundos retirados. Valor: ${saldoRetirado}`);
+            if(saldoRetirado !== null && saldoRetirado <= 101000){
+                res.send(`Fundos retirados. Valor: R$${saldoRetirado}`);
+            }else if(saldoRetirado !== null && saldoRetirado > 101000){
+                res.send(`Valor limite de saque excedido(R$101.000)`);
             }else{
                 res.send(`Erro ao retirar fundos.`)
             }

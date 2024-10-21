@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { getActiveResourcesInfo } from "process";
 import { escape } from "querystring";
 import conexao from "../connection";
+import { FinancialManager } from "../financial/financial";
 dotenv.config();
 
 //usar códigos para status
@@ -184,5 +185,51 @@ export namespace eventsManager {
             res.statusCode = 400;
             res.send("Parâmetros invalidos ou faltantes");
         }
+    }
+
+    export async function betOnEvent(email: string, valor: number, id_evento: number){
+        const connection = await conexao();
+        const getUserId = await connection.execute(
+            `SELECT ID_USUARIO FROM USUARIO WHERE EMAIL = :email`,
+            {email: email}
+        )
+        const id_usuario = (getUserId.rows as any)[0][0];
+        console.log(`Id usuario buscado: ${id_usuario}`);
+        const getWalletId = await connection.execute(
+            `SELECT ID_WALLET FROM WALLET WHERE ID_USUARIO = :id_usuario`,
+            {id_usuario: id_usuario}
+        )
+        const id_carteira = (getWalletId.rows as any)[0][0];
+        console.log(`Id carteira buscado: ${id_carteira}`);
+
+        FinancialManager.withdrawnFunds(id_carteira, id_usuario);
+
+        let createBet = await connection.execute(
+            `INSERT INTO APOSTA(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, DATA_APOSTA)
+                VALUES(SEQ_APOSTA.NEXTVAL, :id_usuario, :id_evento, SYSDATE)`,
+            {   
+                id_usuario: id_usuario,
+                id_evento: id_evento
+            }
+        )
+        connection.commit();
+        
+    }
+    
+    export const betOnEventHandler: RequestHandler=(req:Request, res:Response)=>{
+        const bEmail = req.get("email");
+        const bIdEvento = req.get("evento");
+        const bValor = req.get("valor_aposta");
+
+        const id_evento = bIdEvento ? parseInt(bIdEvento, 10): undefined;
+        const valor_bet = bValor ? parseFloat(bValor): undefined;
+        
+        if(bEmail && id_evento && valor_bet){
+
+        }
+    }
+
+    export const searchEventHandler: RequestHandler=(req:Request, res:Response)=>{
+        const sPesquisa = req.get("pesquisa");
     }
 }
