@@ -17,10 +17,26 @@ export namespace FinancialManager{
         user_id: number 
     };
 
-    export async function getWallet(id: number): Promise<wallet[] | null>{
+    export async function addTransferHistory(tipo: string, id_wallet: number, valor: number,){
         const connection = await conexao();
 
-        let buscarCarteira = await connection.execute(
+        let atualizarHistorico = await connection.execute(
+            `INSERT INTO HISTORICO_TRANSACAO(ID_TRANSACAO, FK_ID_WALLET, DATA_TRANSACAO, HORA_TRANSACAO, VALOR, TIPO_TRANSACAO)
+                VALUES(SEQ_HIST_TRANSACAO.NEXTVAL, :id_wallet, SYSDATE, SYSTIMESTAMP, :valor, :tipo)`,
+            {
+                id_wallet: id_wallet,
+                valor: valor,
+                tipo: tipo
+            }
+        )
+        connection.commit();
+        console.log(`Histórico de transações atualizado. Valor:R$${valor} | Tipo:${tipo}`);
+    }
+
+    export async function getWalletId(id: number): Promise<number | null>{
+        const connection = await conexao();
+
+        let buscarCarteira: OracleDB.Result<{ ID_WALLET: number }> = await connection.execute(
             `SELECT * FROM WALLET WHERE ID_USUARIO = :id`,
             {
                 id: id
@@ -30,7 +46,7 @@ export namespace FinancialManager{
         console.log("Buscando carteira", id);
         if(buscarCarteira && buscarCarteira.rows && buscarCarteira.rows.length > 0){
             console.log("Carteira encontrada", buscarCarteira.rows);
-            return buscarCarteira.rows as wallet[];
+            return (buscarCarteira.rows[0].ID_WALLET as number);
         }else{
             return null;
         }
@@ -63,6 +79,7 @@ export namespace FinancialManager{
         )
         connection.commit();
         console.log("Fundos adicionados", adicionarFundos);
+        await addTransferHistory("DEPÓSITO", (await getWalletId(wallet.user_id) as unknown as number), wallet.saldo);
         return wallet.saldo as number;
     }
     
@@ -83,13 +100,14 @@ export namespace FinancialManager{
                 saldo: SALDO,
                 user_id: ID
             }
-            const carteira = await getWallet(ID);
-            if(carteira !== null){
+            const id_carteira = await getWalletId(ID);
+            
+            if(id_carteira !== null){
                 const saldo = await addFunds(newWallet);
                 res.statusCode = 200;
                 res.send(`Saldo alterado. Adicionado ${saldo}`)
             }else{
-                addWallet(newWallet);
+                await addWallet(newWallet);
                 const saldo = await addFunds(newWallet);
                 res.statusCode = 200;
                 res.send(`Carteira criada e saldo alterado. Adicionado ${saldo}`)
@@ -136,6 +154,7 @@ export namespace FinancialManager{
                 }
 
                 console.log(`Valor sacado: ${valor}| Id da carteira: ${wallet_id}.` );
+                await addTransferHistory("SAQUE", wallet_id, valor);
                 return valor;
             }else if(saldoConta !== undefined && saldoConta >= valor && valor > 101000){
                 console.log(`Valor limite de saque excedido. Valor:${valor}`);

@@ -33,7 +33,7 @@ routes.post('/evaluateNewEvent', EventsManager.evaluateNewEventHandler);
 routes.post('/addFunds', FinancialManager.addFundsHandler);
 routes.post('/withdrawFunds', FinancialManager.withdrawFundsHandler);
 routes.post('/betOnEvent', EventsManager.betOnEventHandler);
-routes.post('/finishEvent', /*handler */);
+routes.post('/finishEvent', EventsManager.finishEventHandler);
 routes.post('/searchEvent', EventsManager.searchEventHandler);
 
 

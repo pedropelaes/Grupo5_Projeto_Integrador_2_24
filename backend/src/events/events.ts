@@ -1,10 +1,12 @@
 import {Request, RequestHandler, Response} from "express";
-import OracleDB from "oracledb";
+import OracleDB, { dbObjectAsPojo } from "oracledb";
 import dotenv from 'dotenv';
 import { getActiveResourcesInfo } from "process";
 import { escape } from "querystring";
 import conexao from "../connection";
 import { FinancialManager } from "../financial/financial";
+import { AccountsManager } from "../accounts/accounts";
+import { fstat } from "fs";
 dotenv.config();
 
 //usar códigos para status
@@ -27,7 +29,7 @@ export namespace EventsManager {
 
         let criareventos = await connection.execute(
             `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA) 
-            VALUES(SEQ_EVENTS.NEXTVAL, UPPER(:titulo), UPPER(:descricao), :data_inicio, :data_fim, :data_evento, 'em analise', :valor_cota, 0, 0)`,
+            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), :data_inicio, :data_fim, :data_evento, 'em analise', :valor_cota, 0, 0)`,
             {
                 titulo: event.titulo,
                 descricao: event.descricao,
@@ -148,7 +150,7 @@ export namespace EventsManager {
         if(evaluate === "aprovado"){
             const avaliarEvento = await connection.execute(
                 `UPDATE EVENTOS 
-                    SET STATUS = 'Aprovado' 
+                    SET STATUS = 'APROVADO' 
                     WHERE TITULO = :titulo `,
                 {
                     titulo: titulo,
@@ -159,7 +161,7 @@ export namespace EventsManager {
         else if(evaluate === "reprovado"){
             const avaliarEvento = await connection.execute(
                 `UPDATE EVENTOS 
-                    SET STATUS = 'Reprovado' 
+                    SET STATUS = 'REPROVADO' 
                     WHERE TITULO = :titulo `,
                 {
                    titulo: titulo,
@@ -242,33 +244,29 @@ export namespace EventsManager {
             if(opcao === "sim"){
                 opt = 1;
                 console.log("Escolha: Sim.");
-            }else{
+            }else if(opcao === "não"){
                 opt = 0;
                 console.log("Escolha: Não.")
+            }else{
+                console.log(`Erro ao realizar aposta.`);
+                return false;
             }
 
-            let createBet = await connection.execute(
-                `INSERT INTO APOSTA(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, DATA_APOSTA, ESCOLHA)
-                    VALUES(SEQ_APOSTA.NEXTVAL, :id_usuario, :id_evento, SYSDATE, :opcao)`,
-                {   
-                    id_usuario: id_usuario,
-                    id_evento: id_evento,
-                    opcao: opt
-                }
-            )
-            let saveBetHistory = await connection.execute(
-                `INSERT INTO HISTORICO_APOSTAS(ID_APOSTA, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, VALOR, OPCAO_APOSTA)
-                    VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_evento, :id_carteira, SYSTIMESTAMP, SYSDATE, :valor, :opcao)`,
+            let saveBet= await connection.execute(
+                `INSERT INTO HISTORICO_APOSTAS(ID_APOSTA, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, VALOR, OPCAO_APOSTA, FK_ID_USUARIO, COTAS)
+                    VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_evento, :id_carteira, SYSTIMESTAMP, SYSDATE, :valor, :opcao, :id_usuario, :cotas)`,
                 {
                     id_evento: id_evento,
                     id_carteira: id_carteira,
                     valor: valorCotas,
-                    opcao: opt
+                    opcao: opt,
+                    id_usuario: id_usuario,
+                    cotas: cotas
                 }
             )
-            console.log(`Aposta salva no histórico.`, saveBetHistory);
+            console.log(`Aposta salva no histórico.`, saveBet);
             connection.commit();
-            console.log(`Aposta realizada. ${valorCotas}`);
+            console.log(`Aposta realizada. Valor das cotas: ${valorCotas}`);
             return true;
         }else{
             console.log(`Erro ao realizar aposta.`);
@@ -334,5 +332,72 @@ export namespace EventsManager {
             res.statusCode = 400;
             res.send(`Parâmetros invalidos ou faltantes`);
         }
+    }
+
+    export async function finishEvent(id_evento: number, resultado: string): Promise<any> {
+        const connection = await conexao();
+        resultado = resultado.toUpperCase();
+        if(resultado === "SIM"){
+            console.log(`Resultado do evento id:${id_evento}: ${resultado}`);
+        }else if(resultado === "NÃO"){
+            console.log(`Resultado do evento id:${id_evento}: ${resultado}`);
+        }else{
+            console.log(`Resultado invalido. Erro ao finalizar evento.`);
+            return null;
+        }
+        
+        let finalizarEvento = await connection.execute(
+            `UPDATE EVENTOS
+                SET STATUS = 'FINALIZADO',
+                    RESULTADO_EVENTO = :resultado
+                WHERE ID_EVENTO = :id_evento`,
+                {
+                    resultado: resultado,
+                    id_evento: id_evento
+                }
+        )
+        connection.commit();
+        console.log(`Evento finalizado. Id_evento: ${id_evento}`, finalizarEvento);
+
+        let apostasSim = await connection.execute(
+            `SELECT SUM(COTAS) FROM HISTORICO_APOSTAS
+             WHERE OPCAO_APOSTA = 1 AND FK_ID_EVENTO = :id_evento`,
+            {id_evento: id_evento}
+        )
+        const cotasSim = (apostasSim.rows as any)[0][0];
+
+        let apostasNao = await connection.execute(
+            `SELECT SUM(COTAS) FROM HISTORICO_APOSTAS
+             WHERE OPCAO_APOSTA = 0 AND FK_ID_EVENTO = :id_evento`,
+            {id_evento: id_evento}
+        )
+        const cotasNao = (apostasNao.rows as any)[0][0];
+        console.log(cotasNao, cotasSim);
+    }
+    
+    export const finishEventHandler: RequestHandler = async (req:Request, res:Response)=>{
+        const fIdEvento = req.get("id_evento");
+        const fEmail = req.get("email_adm");
+        const fSenha = req.get("senha_adm");
+        const fResultadoEvento = req.get("resultado");
+        
+        const id = fIdEvento ? parseInt(fIdEvento, 10): undefined;
+        
+        if (id && fEmail && fSenha && fResultadoEvento){
+            const loginAdm = await AccountsManager.loginADM(fEmail, fSenha);
+            if(loginAdm !== null){
+                await finishEvent(id, fResultadoEvento);
+                res.statusCode = 200;
+                res.send(`Aposta finalizada. ID:${id}`);
+            }else{
+                res.statusCode = 406;
+                res.send(`Conta de moderador não existente.`);
+            }
+
+        }else{
+            res.statusCode = 400;
+            res.send(`Parâmetros invalidos ou faltantes`);
+        }
+        
     }
 }
