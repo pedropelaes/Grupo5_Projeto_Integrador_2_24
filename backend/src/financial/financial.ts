@@ -100,7 +100,8 @@ export namespace FinancialManager{
         }
     }
 
-    export async function withdrawnFunds(wallet_id: number, valor: number): Promise<number | null>{
+    export async function withdrawnFunds(wallet_id: number, valor: number, modo: number): Promise<number | null>{
+        //1 pra aposta, 2 pra saque
         const connection = await conexao();
         const checarFundos = await connection.execute(
             `SELECT SALDO FROM WALLET WHERE ID_WALLET = :wallet_id`,
@@ -108,43 +109,64 @@ export namespace FinancialManager{
         );
 
         const saldoConta = (checarFundos.rows as any)[0][0];
+        if(modo === 2){
+            if(saldoConta !== undefined && saldoConta >= valor && valor <= 101000){
+                let retirarFundos = await connection.execute(
+                    `UPDATE WALLET
+                        SET SALDO = SALDO - :valor
+                        WHERE ID_WALLET = :wallet_id`,
+                        {
+                            valor: valor,
+                            wallet_id: wallet_id
+                        }
+                )
+                connection.commit();
+                if(valor <= 100){
+                    valor = valor - (valor*0.04);
+                    console.log("Taxa: 4%"); 
+                }else if(valor <=1000){
+                    valor = valor - (valor*0.03);
+                    console.log("Taxa: 3%"); 
+                }else if(valor <=5000){
+                    valor = valor - (valor*0.02);
+                    console.log("Taxa: 2%"); 
+                }else if(valor <=100000){
+                    valor = valor - (valor*0.01);
+                    console.log("Taxa: 1%"); 
+                }
 
-        if(saldoConta !== undefined && saldoConta >= valor && valor <= 101000){
-            let retirarFundos = await connection.execute(
-                `UPDATE WALLET
-                    SET SALDO = SALDO - :valor
-                    WHERE ID_WALLET = :wallet_id`,
-                    {
-                        valor: valor,
-                        wallet_id: wallet_id
-                    }
-            )
-            connection.commit();
-            if(valor <= 100){
-                valor = valor - (valor*0.04);
-                console.log("Taxa: 4%"); 
-            }else if(valor <=1000){
-                valor = valor - (valor*0.03);
-                console.log("Taxa: 3%"); 
-            }else if(valor <=5000){
-                valor = valor - (valor*0.02);
-                console.log("Taxa: 2%"); 
-            }else if(valor <=100000){
-                valor = valor - (valor*0.01);
-                console.log("Taxa: 1%"); 
+                console.log(`Valor sacado: ${valor}| Id da carteira: ${wallet_id}.` );
+                return valor;
+            }else if(saldoConta !== undefined && saldoConta >= valor && valor > 101000){
+                console.log(`Valor limite de saque excedido. Valor:${valor}`);
+                return valor;
+            }else{
+                console.log(`Impossivel sacar, saldo insuficiente.`);
+                return null;
             }
+        }else if(modo === 1){
+            if(saldoConta !== undefined && saldoConta >= valor){
+                let retirarFundos = await connection.execute(
+                    `UPDATE WALLET
+                        SET SALDO = SALDO - :valor
+                        WHERE ID_WALLET = :wallet_id`,
+                        {
+                            valor: valor,
+                            wallet_id: wallet_id
+                        }
+                )
+                connection.commit();
+                console.log(`Aposta realizada. Valor: ${valor}`);
+                return valor;
+            }else{
+                console.log(`Erro ao realizar aposta. Saldo excedido.`);
+                return null;
+            }
+        } 
+        console.log(`Erro.`);
+        return null;
+    }
 
-            console.log(`Valor sacado: ${valor}| Id da carteira: ${wallet_id}.` );
-            return valor;
-        }else if(saldoConta !== undefined && saldoConta >= valor && valor > 101000){
-            console.log(`Valor limite de saque excedido. Valor:${valor}`);
-            return valor;
-        }else{
-            console.log(`Impossivel sacar, saldo insuficiente.`);
-            return null;
-        }
-    } 
-    
     export const withdrawFundsHandler: RequestHandler = async (req: Request, res: Response) => {
         const wValue = req.get("valor");
         const wIdWallet = req.get("id_carteira");
@@ -153,7 +175,7 @@ export namespace FinancialManager{
         const id = wIdWallet ? parseInt(wIdWallet, 10): undefined;
 
         if (valor && id){
-            const saldoRetirado = await withdrawnFunds(id, valor);
+            const saldoRetirado = await withdrawnFunds(id, valor, 2);
             res.statusCode = 200;
             if(saldoRetirado !== null && saldoRetirado <= 101000){
                 res.send(`Fundos retirados. Valor: R$${saldoRetirado}`);

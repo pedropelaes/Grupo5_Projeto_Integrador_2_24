@@ -2,7 +2,7 @@ import express from "express";
 import {Request, Response, Router} from "express";
 import { AccountsManager } from "./accounts/accounts";
 import { FinancialManager } from "./financial/financial";
-import { eventsManager } from "./events/events";
+import { EventsManager } from "./events/events";
 
 
 const port = 3000; 
@@ -26,15 +26,15 @@ routes.get('/login',AccountsManager.loginHandler, (req: Request, res: Response)=
 // vamos organizar as rotas em outro local 
 routes.post('/signUp', AccountsManager.signUpHandler);
 routes.post('/login',AccountsManager.loginHandler);
-routes.post('/addNewEvent', eventsManager.createEventHandler);
-routes.post('/getEvents', eventsManager.getEventHandler);
-routes.post('/deleteEvent', eventsManager.deleteEventHandler);
-routes.post('/evaluateNewEvent', eventsManager.evaluateNewEventHandler);
+routes.post('/addNewEvent', EventsManager.createEventHandler);
+routes.post('/getEvents', EventsManager.getEventHandler);
+routes.post('/deleteEvent', EventsManager.deleteEventHandler);
+routes.post('/evaluateNewEvent', EventsManager.evaluateNewEventHandler);
 routes.post('/addFunds', FinancialManager.addFundsHandler);
 routes.post('/withdrawFunds', FinancialManager.withdrawFundsHandler);
-routes.post('/betOnEvent', /*handler */);
+routes.post('/betOnEvent', EventsManager.betOnEventHandler);
 routes.post('/finishEvent', /*handler */);
-routes.post('/searchEvent', /*handler */);
+routes.post('/searchEvent', EventsManager.searchEventHandler);
 
 
 server.use(routes);
