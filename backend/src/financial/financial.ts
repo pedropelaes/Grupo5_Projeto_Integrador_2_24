@@ -21,8 +21,8 @@ export namespace FinancialManager{
         const connection = await conexao();
 
         let atualizarHistorico = await connection.execute(
-            `INSERT INTO HISTORICO_TRANSACAO(ID_TRANSACAO, FK_ID_WALLET, DATA_TRANSACAO, HORA_TRANSACAO, VALOR, TIPO_TRANSACAO)
-                VALUES(SEQ_HIST_TRANSACAO.NEXTVAL, :id_wallet, SYSDATE, SYSTIMESTAMP, :valor, :tipo)`,
+            `INSERT INTO HISTORICO_TRANSACAO(ID_TRANSACAO, FK_ID_WALLET, TIPO_TRANSACAO, DATA_TRANSACAO, HORA_TRANSACAO, VALOR)
+                VALUES(SEQ_HIST_TRANSACAO.NEXTVAL, :id_wallet, :tipo, SYSDATE, SYSTIMESTAMP, :valor)`,
             {
                 id_wallet: id_wallet,
                 valor: valor,

@@ -253,8 +253,8 @@ export namespace EventsManager {
             }
 
             let saveBet= await connection.execute(
-                `INSERT INTO HISTORICO_APOSTAS(ID_APOSTA, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, VALOR, OPCAO_APOSTA, FK_ID_USUARIO, COTAS)
-                    VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_evento, :id_carteira, SYSTIMESTAMP, SYSDATE, :valor, :opcao, :id_usuario, :cotas)`,
+                `INSERT INTO HISTORICO_APOSTAS(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
+                    VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_usuario, :id_evento, :id_carteira, SYSTIMESTAMP, SYSDATE, :cotas, :valor, :opcao)`,
                 {
                     id_evento: id_evento,
                     id_carteira: id_carteira,
@@ -334,13 +334,32 @@ export namespace EventsManager {
         }
     }
 
+    export async function getEventStatus(id_evento:number): Promise<any>{
+        const connection = await conexao();
+        let statusEvento = await connection.execute(
+            `SELECT STATUS
+             FROM EVENTOS
+             WHERE ID_EVENTO = :id_evento`,
+            {id_evento: id_evento}
+        )
+        return (statusEvento.rows as any)[0][0];
+    }
+
     export async function finishEvent(id_evento: number, resultado: string): Promise<any> {
+        if(await getEventStatus(id_evento) == "FINALIZADO"){
+            console.log(`Evento ${id_evento} já finalizado.`);
+            return null;
+        }
+
         const connection = await conexao();
         resultado = resultado.toUpperCase();
+        let resultado_aposta: number;
         if(resultado === "SIM"){
             console.log(`Resultado do evento id:${id_evento}: ${resultado}`);
+            resultado_aposta = 1;
         }else if(resultado === "NÃO"){
             console.log(`Resultado do evento id:${id_evento}: ${resultado}`);
+            resultado_aposta = 0;
         }else{
             console.log(`Resultado invalido. Erro ao finalizar evento.`);
             return null;
@@ -360,19 +379,62 @@ export namespace EventsManager {
         console.log(`Evento finalizado. Id_evento: ${id_evento}`, finalizarEvento);
 
         let apostasSim = await connection.execute(
-            `SELECT SUM(COTAS) FROM HISTORICO_APOSTAS
+            `SELECT SUM(COTAS), SUM(VALOR) FROM HISTORICO_APOSTAS
              WHERE OPCAO_APOSTA = 1 AND FK_ID_EVENTO = :id_evento`,
             {id_evento: id_evento}
         )
         const cotasSim = (apostasSim.rows as any)[0][0];
+        const valorSim = (apostasSim.rows as any)[0][1];
 
         let apostasNao = await connection.execute(
-            `SELECT SUM(COTAS) FROM HISTORICO_APOSTAS
+            `SELECT SUM(COTAS), SUM(VALOR) FROM HISTORICO_APOSTAS
              WHERE OPCAO_APOSTA = 0 AND FK_ID_EVENTO = :id_evento`,
             {id_evento: id_evento}
         )
         const cotasNao = (apostasNao.rows as any)[0][0];
-        console.log(cotasNao, cotasSim);
+        const valorNao = (apostasNao.rows as any)[0][1];
+        console.log(`Quantidade de cotas não: ${cotasNao} | Quantidade de cotas sim: ${cotasSim}`);
+        console.log(`Valor total de nao: ${valorNao} | Valor total de sim: ${valorSim}`);
+
+        let apostasVencedoras = await connection.execute(
+            `SELECT ID_APOSTA, FK_ID_USUARIO, FK_ID_WALLET, COTAS, VALOR
+             FROM HISTORICO_APOSTAS
+             WHERE OPCAO_APOSTA = :resultado_aposta AND FK_ID_EVENTO = :id_evento`,
+             {
+                resultado_aposta: resultado_aposta,
+                id_evento: id_evento
+             }
+        )
+        let cotasVencedoras:number;
+        let valorPerdedor:number;
+        if(resultado_aposta === 0){
+            cotasVencedoras = cotasNao;
+            valorPerdedor = valorSim;
+        }else{
+            cotasVencedoras = cotasSim;
+            valorPerdedor = valorNao;
+        }
+        console.log(apostasVencedoras.rows);
+        const qnt_vencedores = (apostasVencedoras.rows?.length as any);
+        
+        let valor_vencedor:number;
+        for(let i = 0; i<qnt_vencedores; i++){  // 0:id_aposta | 1:id_usuario | 2: id_wallet | 3: total de cotas | 4: Valor vencedor
+            valor_vencedor =(apostasVencedoras.rows as any)[i][4] + ((apostasVencedoras.rows as any)[i][3] / cotasVencedoras) * valorPerdedor;
+            let premiarVencedor = await connection.execute(
+                `UPDATE WALLET
+                    SET SALDO = SALDO + :valor_vencedor
+                    WHERE ID_USUARIO = :id_vencedor`,
+                    {
+                        valor_vencedor: valor_vencedor,
+                        id_vencedor: (apostasVencedoras.rows as any)[i][1]
+                    }
+            )
+            await connection.commit();
+            console.log(`Usuario premiado: ${(apostasVencedoras.rows as any)[i][1]} | Valor: ${valor_vencedor} | Id da aposta: ${(apostasVencedoras.rows as any)[i][0]}`);
+            FinancialManager.addTransferHistory("PREMIAÇÃO", (apostasVencedoras.rows as any)[i][2], valor_vencedor);
+            return true;
+        }
+
     }
     
     export const finishEventHandler: RequestHandler = async (req:Request, res:Response)=>{
@@ -386,9 +448,14 @@ export namespace EventsManager {
         if (id && fEmail && fSenha && fResultadoEvento){
             const loginAdm = await AccountsManager.loginADM(fEmail, fSenha);
             if(loginAdm !== null){
-                await finishEvent(id, fResultadoEvento);
-                res.statusCode = 200;
-                res.send(`Aposta finalizada. ID:${id}`);
+                const evento = await finishEvent(id, fResultadoEvento);
+                if(evento !== null){
+                    res.statusCode = 200;
+                    res.send(`Aposta finalizada. ID:${id}`);
+                }else{
+                    res.statusCode = 406;
+                    res.send(`Aposta já finalizada. ID:${id}`);
+                }
             }else{
                 res.statusCode = 406;
                 res.send(`Conta de moderador não existente.`);
@@ -398,6 +465,5 @@ export namespace EventsManager {
             res.statusCode = 400;
             res.send(`Parâmetros invalidos ou faltantes`);
         }
-        
     }
 }
