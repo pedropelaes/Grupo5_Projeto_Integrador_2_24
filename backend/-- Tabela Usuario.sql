@@ -13,7 +13,8 @@ CREATE TABLE USUARIO (
     EMAIL VARCHAR2(150) NOT NULL UNIQUE,  -- Atualizado para 150 caracteres
     NOME VARCHAR2(100) NOT NULL,           -- Atualizado para 100 caracteres
     SENHA VARCHAR2(50) NOT NULL,           -- Atualizado para 50 caracteres
-    DATA_NASCIMENTO DATE NOT NULL
+    DATA_NASCIMENTO DATE NOT NULL,
+    TOKEN_SESSAO VARCHAR2(50)
 );
 
 -- Tabela EVENTOS

@@ -62,6 +62,32 @@ export namespace AccountsManager {
         }
     }
 
+    async function createSessionToken(email: string, senha: string): Promise<any>{
+        const connection= await conexao()
+
+        let criarToken = await connection.execute(
+            `UPDATE USUARIO
+                SET TOKEN_SESSAO = dbms_random.string('x', 50)
+                WHERE EMAIL = :email AND SENHA = :senha`,
+            {
+                email: email,
+                senha: senha
+            }
+        )
+        connection.commit();
+        let getToken = await connection.execute(
+            `SELECT TOKEN_SESSAO 
+             FROM USUARIO
+             WHERE EMAIL = :email AND SENHA = :senha`,
+            {
+                email: email,
+                senha: senha
+            }
+        )
+        console.log(`Token de sessão gerado para usuario: ${email} | ${(getToken.rows as any)[0][0]}`);
+        return (getToken.rows as any)[0][0];
+    }
+    
     async function login(email:string, senha:string): Promise<any> {
 
         const connection= await conexao()
@@ -84,6 +110,7 @@ export namespace AccountsManager {
         }
 
     }
+
 export const loginHandler: RequestHandler = async (req:Request,res:Response)=>{
     const pEmail=req.get('email');
     const pPassword = req.get('senha');
@@ -91,16 +118,17 @@ export const loginHandler: RequestHandler = async (req:Request,res:Response)=>{
     if(pEmail && pPassword){
         const LOGIN = await login(pEmail,pPassword)
         if(LOGIN !== null){
+            const token = await createSessionToken(pEmail, pPassword);
             res.statusCode = 200;
-            res.send('Login executado.')
+            res.send(`Login executado. Sessão: ${token}`);
         }else{
             res.statusCode = 406;
-            res.send('Conta não existente.')
+            res.send('Conta não existente ou senha/email errados.');
         }
     }
     else{
         res.statusCode = 400;
-        res.send("Requição invalida. Parametros faltando.")
+        res.send("Requição invalida. Parametros faltando.");
     }
 }
 
