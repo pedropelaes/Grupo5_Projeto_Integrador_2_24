@@ -9,8 +9,6 @@ import { AccountsManager } from "../accounts/accounts";
 import { fstat } from "fs";
 dotenv.config();
 
-//usar códigos para status
-
 export namespace EventsManager {
     export type event={
         id_evento: number | undefined,
@@ -145,134 +143,171 @@ export namespace EventsManager {
         }
     }
 
-    export async function evaluateEvent(titulo:string, evaluate:string){
+    export async function evaluateEvent(id:number, evaluate:string): Promise<any>{
         const connection= await conexao()
         if(evaluate === "aprovado"){
             const avaliarEvento = await connection.execute(
                 `UPDATE EVENTOS 
                     SET STATUS = 'APROVADO' 
-                    WHERE TITULO = :titulo `,
+                    WHERE ID_EVENTO = :id_evento `,
                 {
-                    titulo: titulo,
+                    id_evento: id,
                 }
             )
             console.log("Aposta aprovada.");
+            connection.commit();
+            return true;
         }
         else if(evaluate === "reprovado"){
             const avaliarEvento = await connection.execute(
                 `UPDATE EVENTOS 
                     SET STATUS = 'REPROVADO' 
-                    WHERE TITULO = :titulo `,
+                    WHERE ID_EVENTO = :id_evento `,
                 {
-                   titulo: titulo,
+                    id_evento: id,
                 }
             )   
             console.log("Aposta reprovada.");
+            connection.commit();
+            return true;
         }
         else{
             console.log("Avaliação invalida.");
+            return false;
         }
-        connection.commit();
+        
     }
     
-    export const evaluateNewEventHandler: RequestHandler=(req: Request, res:Response)=>{
-        const eTitulo = req.get("titulo");
+    export const evaluateNewEventHandler: RequestHandler = async (req: Request, res:Response)=>{
+        const eId = req.get("id_evento");
         const eEvaluate = req.get("evaluate");
+        const fEmail = req.get("email_adm");
+        const fSenha = req.get("senha_adm");
 
-        if(eTitulo && eEvaluate){
-            evaluateEvent(eTitulo, eEvaluate);
-            res.statusCode = 200;
-            res.send(`Evento avaliado. `);
+        const ID = eId ? parseInt(eId, 10): undefined;
+        
+        if(ID && eEvaluate && fEmail && fSenha){
+            const loginADM = await AccountsManager.loginADM(fEmail, fSenha);
+            if(loginADM !== null){
+                const avaliacao = await evaluateEvent(ID, eEvaluate);
+                if(avaliacao === true){
+                    res.statusCode = 200;
+                    res.send(`Evento avaliado.`);
+                }else{
+                    res.statusCode = 400;
+                    res.send(`Avaliação Invalida.`);
+                }
+            }else{
+                res.statusCode = 401;
+                res.send(`Acesso Negado.`);
+            }
         }else{
             res.statusCode = 400;
             res.send("Parâmetros invalidos ou faltantes");
         }
     }
 
-    export async function betOnEvent(email: string, cotas: number, id_evento: number, opcao: string):Promise<boolean>{
+    export async function getEventStatus(id_evento:number): Promise<any>{
         const connection = await conexao();
-        const getUserId = await connection.execute(
-            `SELECT ID_USUARIO FROM USUARIO WHERE EMAIL = :email`,
-            {email: email}
-        )
-
-        const id_usuario = (getUserId.rows as any)[0][0];
-        console.log(`Id usuario buscado: ${id_usuario}`);
-
-        const getWalletId = await connection.execute(
-            `SELECT ID_WALLET FROM WALLET WHERE ID_USUARIO = :id_usuario`,
-            {id_usuario: id_usuario}
-        )
-
-        const id_carteira = (getWalletId.rows as any)[0][0];
-        console.log(`Id carteira buscado: ${id_carteira}`);
-
-        const getValorCotas = await connection.execute(
-            `SELECT VALORCOTA FROM EVENTOS WHERE ID_EVENTO = :id_evento`,
+        let statusEvento = await connection.execute(
+            `SELECT STATUS
+             FROM EVENTOS
+             WHERE ID_EVENTO = :id_evento`,
             {id_evento: id_evento}
         )
+        return (statusEvento.rows as any)[0][0];
+    }
 
-        let updateQtdCotas = await connection.execute(
-            `UPDATE EVENTOS
-                SET QUANTIDADECOTAS = QUANTIDADECOTAS + :qtd_cotas
-                WHERE ID_EVENTO = :id_evento`,
-            {
-                qtd_cotas: cotas,
-                id_evento: id_evento
-            }
-        )
-        console.log(`Quantidade de cotas atualizada: ${cotas}`, updateQtdCotas); 
+    export async function betOnEvent(email: string, cotas: number, id_evento: number, opcao: string):Promise<boolean>{ 
+        if(await getEventStatus(id_evento) === "APROVADO"){
+            const connection = await conexao();
+            const getUserId = await connection.execute(
+                `SELECT ID_USUARIO FROM USUARIO WHERE EMAIL = :email`,
+                {email: email}
+            )
 
-        const valorCotas = (getValorCotas.rows as any)[0][0] * cotas;
-        console.log(`Valor das cotas: ${valorCotas}`);
-        
-        let updateTotalValue = await connection.execute(
-            `UPDATE EVENTOS
-                SET TOTAL_APOSTA = TOTAL_APOSTA + :valor
-                WHERE ID_EVENTO = :id_evento`,
-            {
-                valor: valorCotas,
-                id_evento: id_evento
+            const id_usuario = (getUserId.rows as any)[0][0];
+            console.log(`Id usuario buscado: ${id_usuario}`);
+
+            const getWalletId = await connection.execute(
+                `SELECT ID_WALLET FROM WALLET WHERE ID_USUARIO = :id_usuario`,
+                {id_usuario: id_usuario}
+            )
+
+            const id_carteira = (getWalletId.rows as any)[0][0];
+            console.log(`Id carteira buscado: ${id_carteira}`);
+
+            const getValorCotas = await connection.execute(
+                `SELECT VALORCOTA FROM EVENTOS WHERE ID_EVENTO = :id_evento`,
+                {id_evento: id_evento}
+            )
+
+            let updateQtdCotas = await connection.execute(
+                `UPDATE EVENTOS
+                    SET QUANTIDADECOTAS = QUANTIDADECOTAS + :qtd_cotas
+                    WHERE ID_EVENTO = :id_evento`,
+                {
+                    qtd_cotas: cotas,
+                    id_evento: id_evento
+                }
+            )
+            console.log(`Quantidade de cotas atualizada: ${cotas}`, updateQtdCotas); 
+
+            const valorCotas = (getValorCotas.rows as any)[0][0] * cotas;
+            console.log(`Valor das cotas: ${valorCotas}`);
+            
+            let updateTotalValue = await connection.execute(
+                `UPDATE EVENTOS
+                    SET TOTAL_APOSTA = TOTAL_APOSTA + :valor
+                    WHERE ID_EVENTO = :id_evento`,
+                {
+                    valor: valorCotas,
+                    id_evento: id_evento
+                }
+            )
+            console.log(`Valor total das apostas do evento atualizado.`, updateTotalValue);
+            
+            const aposta = await FinancialManager.withdrawnFunds(id_carteira, valorCotas, 1);
+            if(aposta !== null){
+                opcao = opcao.toLowerCase();
+                let opt:number;
+                if(opcao === "sim"){
+                    opt = 1;
+                    console.log("Escolha: Sim.");
+                }else if(opcao === "não"){
+                    opt = 0;
+                    console.log("Escolha: Não.")
+                }else{
+                    console.log(`Erro ao realizar aposta.`);
+                    return false;
+                }
+
+                let saveBet= await connection.execute(
+                    `INSERT INTO HISTORICO_APOSTAS(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
+                        VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_usuario, :id_evento, :id_carteira, SYSTIMESTAMP, SYSDATE, :cotas, :valor, :opcao)`,
+                    {
+                        id_evento: id_evento,
+                        id_carteira: id_carteira,
+                        valor: valorCotas,
+                        opcao: opt,
+                        id_usuario: id_usuario,
+                        cotas: cotas
+                    }
+                )
+                console.log(`Aposta salva no histórico.`, saveBet);
+                connection.commit();
+                console.log(`Aposta realizada. Valor das cotas: ${valorCotas}`);
+                return true;
             }
-        )
-        console.log(`Valor total das apostas do evento atualizado.`, updateTotalValue);
-        
-        const aposta = await FinancialManager.withdrawnFunds(id_carteira, valorCotas, 1);
-        if(aposta !== null){
-            opcao = opcao.toLowerCase();
-            let opt:number;
-            if(opcao === "sim"){
-                opt = 1;
-                console.log("Escolha: Sim.");
-            }else if(opcao === "não"){
-                opt = 0;
-                console.log("Escolha: Não.")
-            }else{
+            else{
                 console.log(`Erro ao realizar aposta.`);
                 return false;
             }
-
-            let saveBet= await connection.execute(
-                `INSERT INTO HISTORICO_APOSTAS(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
-                    VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_usuario, :id_evento, :id_carteira, SYSTIMESTAMP, SYSDATE, :cotas, :valor, :opcao)`,
-                {
-                    id_evento: id_evento,
-                    id_carteira: id_carteira,
-                    valor: valorCotas,
-                    opcao: opt,
-                    id_usuario: id_usuario,
-                    cotas: cotas
-                }
-            )
-            console.log(`Aposta salva no histórico.`, saveBet);
-            connection.commit();
-            console.log(`Aposta realizada. Valor das cotas: ${valorCotas}`);
-            return true;
         }else{
             console.log(`Erro ao realizar aposta.`);
             return false;
         }
-        
+            
     }
     
     export const betOnEventHandler: RequestHandler = async (req:Request, res:Response)=>{
@@ -334,16 +369,7 @@ export namespace EventsManager {
         }
     }
 
-    export async function getEventStatus(id_evento:number): Promise<any>{
-        const connection = await conexao();
-        let statusEvento = await connection.execute(
-            `SELECT STATUS
-             FROM EVENTOS
-             WHERE ID_EVENTO = :id_evento`,
-            {id_evento: id_evento}
-        )
-        return (statusEvento.rows as any)[0][0];
-    }
+    
 
     export async function finishEvent(id_evento: number, resultado: string): Promise<any> {
         if(await getEventStatus(id_evento) == "FINALIZADO"){

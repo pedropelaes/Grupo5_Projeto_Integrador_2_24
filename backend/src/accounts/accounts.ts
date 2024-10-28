@@ -84,46 +84,45 @@ export namespace AccountsManager {
         }
 
     }
-export const loginHandler: RequestHandler = async (req:Request,res:Response)=>{
-    const pEmail=req.get('email');
-    const pPassword = req.get('senha');
+    export const loginHandler: RequestHandler = async (req:Request,res:Response)=>{
+        const pEmail=req.get('email');
+        const pPassword = req.get('senha');
 
-    if(pEmail && pPassword){
-        const LOGIN = await login(pEmail,pPassword)
-        if(LOGIN !== null){
-            res.statusCode = 200;
-            res.send('Login executado.')
-        }else{
-            res.statusCode = 406;
-            res.send('Conta não existente.')
+        if(pEmail && pPassword){
+            const LOGIN = await login(pEmail,pPassword)
+            if(LOGIN !== null){
+                res.statusCode = 200;
+                res.send('Login executado.')
+            }else{
+                res.statusCode = 401;
+                res.send('Conta não existente.')
+            }
+        }
+        else{
+            res.statusCode = 400;
+            res.send("Requição invalida. Parametros faltando.")
         }
     }
-    else{
-        res.statusCode = 400;
-        res.send("Requição invalida. Parametros faltando.")
+
+    export async function loginADM(email:string, senha:string) {
+        const connection= await conexao()
+
+        let accountsRows = await connection.execute(
+            'SELECT * FROM MODERADOR WHERE EMAIL = :email AND SENHA = :senha',
+            {
+                email: email,
+                senha: senha
+            },
+            {outFormat: OracleDB.OUT_FORMAT_OBJECT}
+
+        )
+        console.dir(accountsRows.rows);
+        console.log("Login info:", email, senha);
+        if(accountsRows && accountsRows.rows && accountsRows.rows.length > 0){
+            return accountsRows.rows;
+        }else{
+            return null;
+        }
+
     }
-}
-
-export async function loginADM(email:string, senha:string) {
-    const connection= await conexao()
-
-    let accountsRows = await connection.execute(
-        'SELECT * FROM MODERADOR WHERE EMAIL = :email AND SENHA = :senha',
-        {
-            email: email,
-            senha: senha
-        },
-        {outFormat: OracleDB.OUT_FORMAT_OBJECT}
-
-    )
-    console.dir(accountsRows.rows)
-    console.log("Login info:", email, senha);
-    if(accountsRows && accountsRows.rows && accountsRows.rows.length > 0){
-        return accountsRows.rows;
-    }else{
-        return null;
-    }
-
-}
-
 }

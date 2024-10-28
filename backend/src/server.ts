@@ -22,7 +22,6 @@ routes.get('/login',AccountsManager.loginHandler, (req: Request, res: Response)=
     AccountsManager.loginHandler
 });
 
-
 // vamos organizar as rotas em outro local 
 routes.post('/signUp', AccountsManager.signUpHandler);
 routes.post('/login',AccountsManager.loginHandler);
