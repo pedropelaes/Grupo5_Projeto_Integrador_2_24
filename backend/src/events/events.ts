@@ -6,7 +6,7 @@ import { escape } from "querystring";
 import conexao from "../connection";
 import { FinancialManager } from "../financial/financial";
 import { AccountsManager } from "../accounts/accounts";
-import { fstat } from "fs";
+import { fstat, stat } from "fs";
 dotenv.config();
 
 export namespace EventsManager {
@@ -20,6 +20,21 @@ export namespace EventsManager {
         status: string | undefined,
         valor_cota: number,
     }
+
+    export async function getEventStatus(id_evento:number | null): Promise<any>{
+            const connection = await conexao();
+            let statusEvento = await connection.execute(
+                `SELECT STATUS
+                FROM EVENTOS
+                WHERE ID_EVENTO = :id_evento`,
+                {id_evento: id_evento}
+            )
+            if(statusEvento && statusEvento.rows && statusEvento.rows.length > 0){
+                return (statusEvento.rows as any)[0][0];
+            }else{
+                return null;
+            }
+        }    
     
     export async function salvarevento(event: event){
 
@@ -27,7 +42,7 @@ export namespace EventsManager {
 
         let criareventos = await connection.execute(
             `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA) 
-            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), :data_inicio, :data_fim, :data_evento, 'em analise', :valor_cota, 0, 0)`,
+            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'em analise', :valor_cota, 0, 0)`,
             {
                 titulo: event.titulo,
                 descricao: event.descricao,
@@ -41,7 +56,7 @@ export namespace EventsManager {
         console.log("Evento criado e cadastrado no banco,", criareventos);
     }
     
-    export const createEventHandler: RequestHandler=(req: Request, res:Response)=>{
+    export const createEventHandler: RequestHandler = async (req: Request, res:Response)=>{
         const eTitulo = req.get("titulo");
         const eDesc = req.get("descricao");
         const eDataInicio = req.get("datainicio");
@@ -52,19 +67,24 @@ export namespace EventsManager {
         const VC = eValorCota ? parseInt(eValorCota, 10): undefined; //converte a requisição do valor da cota para numero   
         
         if(eTitulo && eDesc && eDataInicio && eDataFim && eDataEvento  && VC !== undefined && VC > 1){
-            const novoevento:event = {
-                id_evento: undefined,
-                titulo: eTitulo,
-                descricao: eDesc,
-                data_inicio: eDataInicio,
-                data_fim: eDataFim,
-                data_evento: eDataEvento,
-                status: undefined,
-                valor_cota: VC
+            if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
+                const novoevento:event = {
+                    id_evento: undefined,
+                    titulo: eTitulo,
+                    descricao: eDesc,
+                    data_inicio: eDataInicio,
+                    data_fim: eDataFim,
+                    data_evento: eDataEvento,
+                    status: undefined,
+                    valor_cota: VC
+                }
+                salvarevento(novoevento);
+                res.statusCode = 200;
+                res.send(`Novo evento criado. Titulo: ${eTitulo}`);
+            }else{
+                res.statusCode = 401;
+                res.send(`Permissão negada.`);
             }
-            salvarevento(novoevento);
-            res.statusCode = 200;
-            res.send(`Novo evento criado. Titulo: ${eTitulo}`);
         }else{
             res.statusCode=400;
             res.send("Parâmetros invalidos ou faltantes.");
@@ -73,6 +93,7 @@ export namespace EventsManager {
 
     export async function getEvent(busca: string, req:string): Promise<event[] | null>{
         const connection= await conexao()
+        busca = busca.toUpperCase();
         let buscarevento;
         if(req === "status"){
             buscarevento = await connection.execute(
@@ -104,7 +125,7 @@ export namespace EventsManager {
         const gStatus = req.get("status");
         const gTitulo = req.get("titulo");
 
-        if(gStatus ){
+        if(gStatus){
             const busca = await getEvent(gStatus, "status");
             res.status(200).json({"Resultado da busca":busca});
         }else if(gTitulo){
@@ -117,26 +138,35 @@ export namespace EventsManager {
         }
     }
 
-    export async function deletarEvento(titulo: string){
+    export async function deletarEvento(id: number){
         const connection= await conexao()
         const apagarEvento = await connection.execute(
             `UPDATE EVENTOS 
                 SET STATUS = 'Apagado' 
-                WHERE TITULO = :titulo `,
+                WHERE ID_EVENTO = :id `,
         {
-            titulo: titulo,
+            id: id,
         })
         connection.commit();
         console.log("Evento apagado. ", apagarEvento);
     }
 
-    export const deleteEventHandler: RequestHandler=(req: Request, res:Response)=>{
-        const dTitulo = req.get("titulo");
+    export const deleteEventHandler: RequestHandler = async (req: Request, res:Response)=>{
+        const dId_evento = req.get("id");
+
+        const ID_EVENTO = dId_evento ? parseInt(dId_evento, 10): undefined;
         
-        if(dTitulo){
-            deletarEvento(dTitulo);
-            res.statusCode = 200;
-            res.send(`Evento deletado. Titulo: ${dTitulo}`);
+        const status = await getEventStatus(ID_EVENTO as number);
+
+        if(ID_EVENTO){
+            if( await AccountsManager.checkToken(AccountsManager.last_token as string) !==null && status != null && status !== 'APROVADO'){
+                await deletarEvento(ID_EVENTO);
+                res.statusCode = 200;
+                res.send(`Evento deletado. Id: ${ID_EVENTO}`);
+            }else{
+                res.statusCode = 401;
+                res.send(`Permissão para deletar evento negada ou evento inexistente.`);
+            }
         }else{
             res.statusCode = 400;
             res.send("Parâmetros invalidos ou faltantes");
@@ -207,23 +237,12 @@ export namespace EventsManager {
         }
     }
 
-    export async function getEventStatus(id_evento:number): Promise<any>{
-        const connection = await conexao();
-        let statusEvento = await connection.execute(
-            `SELECT STATUS
-             FROM EVENTOS
-             WHERE ID_EVENTO = :id_evento`,
-            {id_evento: id_evento}
-        )
-        return (statusEvento.rows as any)[0][0];
-    }
-
-    export async function betOnEvent(email: string, cotas: number, id_evento: number, opcao: string):Promise<boolean>{ 
+    export async function betOnEvent(token: string, cotas: number, id_evento: number, opcao: string):Promise<boolean>{ 
         if(await getEventStatus(id_evento) === "APROVADO"){
             const connection = await conexao();
             const getUserId = await connection.execute(
-                `SELECT ID_USUARIO FROM USUARIO WHERE EMAIL = :email`,
-                {email: email}
+                `SELECT ID_USUARIO FROM USUARIO WHERE TOKEN_SESSAO = :token`,
+                {token: token}
             )
 
             const id_usuario = (getUserId.rows as any)[0][0];
@@ -233,7 +252,10 @@ export namespace EventsManager {
                 `SELECT ID_WALLET FROM WALLET WHERE ID_USUARIO = :id_usuario`,
                 {id_usuario: id_usuario}
             )
-
+            if(getWalletId && getWalletId.rows && getWalletId.rows.length === 0){
+                console.log("Carteira inexistente, primeiro deposito não foi realizado.");
+                return false;
+            }
             const id_carteira = (getWalletId.rows as any)[0][0];
             console.log(`Id carteira buscado: ${id_carteira}`);
 
@@ -311,7 +333,6 @@ export namespace EventsManager {
     }
     
     export const betOnEventHandler: RequestHandler = async (req:Request, res:Response)=>{
-        const bEmail = req.get("email");
         const bIdEvento = req.get("evento");
         const bCotas = req.get("quantidade_cotas");
         const bEscolha = req.get("escolha");
@@ -319,14 +340,19 @@ export namespace EventsManager {
         const id_evento = bIdEvento ? parseInt(bIdEvento, 10): undefined;
         const qtd_cotas = bCotas ? parseInt(bCotas, 10): undefined;
         
-        if(bEmail && id_evento && qtd_cotas &&bEscolha){
-            const bet = await betOnEvent(bEmail, qtd_cotas, id_evento, bEscolha);
-                if(bet === true){
-                res.statusCode = 200;
-                res.send(`Aposta realizada. Cotas:${qtd_cotas}.`);
+        if(id_evento && qtd_cotas &&bEscolha){
+            if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
+                const bet = await betOnEvent(AccountsManager.last_token as string, qtd_cotas, id_evento, bEscolha);
+                    if(bet === true){
+                    res.statusCode = 200;
+                    res.send(`Aposta realizada. Cotas:${qtd_cotas}.`);
+                }else{
+                    res.statusCode = 406;
+                    res.send(`Erro ao realizar aposta.`);
+                }
             }else{
-                res.statusCode = 406;
-                res.send(`Erro ao realizar aposta.`);
+                res.statusCode = 401;
+                res.send(`Permissão negada.`);
             }
         }else{
             res.statusCode = 400;

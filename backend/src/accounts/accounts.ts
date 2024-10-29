@@ -21,7 +21,8 @@ export namespace AccountsManager {
         const connection= await conexao()
 
         let cadastrocontas = await connection.execute(
-            "INSERT INTO USUARIO(ID_USUARIO, EMAIL, NOME, SENHA, DATA_NASCIMENTO) VALUES(SEQ_USUARIO.NEXTVAL, :email, :nome, :senha, TO_DATE(:data_nasc, 'YYYY-MM-DD'))",
+            `INSERT INTO USUARIO(ID_USUARIO, EMAIL, NOME, SENHA, DATA_NASCIMENTO) 
+                VALUES(SEQ_USUARIO.NEXTVAL, :email, :nome, :senha, TO_DATE(:data_nasc, 'YYYY-MM-DD'))`,
             {
                 
                 email: ua.email,
@@ -62,6 +63,32 @@ export namespace AccountsManager {
         }
     }
 
+    async function createSessionToken(email: string, senha: string): Promise<any>{
+        const connection= await conexao()
+
+        let criarToken = await connection.execute(
+            `UPDATE USUARIO
+                SET TOKEN_SESSAO = dbms_random.string('x', 50)
+                WHERE EMAIL = :email AND SENHA = :senha`,
+            {
+                email: email,
+                senha: senha
+            }
+        )
+        connection.commit();
+        let getToken = await connection.execute(
+            `SELECT TOKEN_SESSAO 
+             FROM USUARIO
+             WHERE EMAIL = :email AND SENHA = :senha`,
+            {
+                email: email,
+                senha: senha
+            }
+        )
+        console.log(`Token de sessão gerado para usuario: ${email} | ${(getToken.rows as any)[0][0]}`);
+        return (getToken.rows as any)[0][0];
+    }
+
     async function login(email:string, senha:string): Promise<any> {
 
         const connection= await conexao()
@@ -84,6 +111,9 @@ export namespace AccountsManager {
         }
 
     }
+
+    export let last_token: string | null = null;
+
     export const loginHandler: RequestHandler = async (req:Request,res:Response)=>{
         const pEmail=req.get('email');
         const pPassword = req.get('senha');
@@ -91,8 +121,10 @@ export namespace AccountsManager {
         if(pEmail && pPassword){
             const LOGIN = await login(pEmail,pPassword)
             if(LOGIN !== null){
+                const token = await createSessionToken(pEmail, pPassword);
                 res.statusCode = 200;
-                res.send('Login executado.')
+                res.send(`Login executado. Sessão: ${token}`);
+                last_token = token;
             }else{
                 res.statusCode = 401;
                 res.send('Conta não existente.')
@@ -124,5 +156,23 @@ export namespace AccountsManager {
             return null;
         }
 
+    }
+
+    export async function checkToken(token: string): Promise<any>{
+        const connection= await conexao()
+
+        let getId = await connection.execute(
+            `SELECT ID_USUARIO 
+             FROM USUARIO
+             WHERE TOKEN_SESSAO = :token`,
+            {
+                token: token
+            }
+        )
+        if(getId && getId.rows && getId.rows.length > 0){
+            return (getId.rows as any)[0][0];
+        }else{
+            return null;
+        }
     }
 }

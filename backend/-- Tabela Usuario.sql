@@ -13,7 +13,8 @@ CREATE TABLE USUARIO (
     EMAIL VARCHAR2(150) NOT NULL UNIQUE,  -- Atualizado para 150 caracteres
     NOME VARCHAR2(100) NOT NULL,           -- Atualizado para 100 caracteres
     SENHA VARCHAR2(50) NOT NULL,           -- Atualizado para 50 caracteres
-    DATA_NASCIMENTO DATE NOT NULL
+    DATA_NASCIMENTO DATE NOT NULL,
+    TOKEN_SESSAO VARCHAR2(50)
 );
 
 -- Tabela EVENTOS
@@ -28,7 +29,9 @@ CREATE TABLE EVENTOS (
     valorCota INT NOT NULL,                  -- Valor da cota
     quantidadeCotas INT NOT NULL,
     TOTAL_APOSTA INT NOT NULL,               -- Substituído VALOR_COTA por TOTAL_APOSTA
-    RESULTADO_EVENTO VARCHAR2(3)                 -- Novo campo, pode ser nulo ou não
+    RESULTADO_EVENTO VARCHAR2(3),                 -- Novo campo, pode ser nulo ou não
+    ID_CRIADOR INT,
+    CONSTRAINT fk_criador FOREIGN KEY (ID_CRIADOR) REFERENCES USUARIO(id_usuario)
 );
 
 -- Tabela WALLET

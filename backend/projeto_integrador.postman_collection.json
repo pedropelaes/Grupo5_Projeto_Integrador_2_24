@@ -1,0 +1,467 @@
+{
+	"info": {
+		"_postman_id": "a5a9e2f4-ffc1-457e-bdf7-3e9dbf5266fc",
+		"name": "projeto_integrador",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38701676"
+	},
+	"item": [
+		{
+			"name": "Accounts",
+			"item": [
+				{
+					"name": "signUp",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "id",
+								"value": "1",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "name",
+								"value": "Pedro",
+								"type": "text"
+							},
+							{
+								"key": "email",
+								"value": "ponte@gmail.com",
+								"type": "text"
+							},
+							{
+								"key": "senha",
+								"value": "pontepreta",
+								"type": "text"
+							},
+							{
+								"key": "birthdate",
+								"value": "2006-04-26",
+								"description": "\"YYYY-MM-DD\"",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/signUp",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"signUp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "id",
+								"value": "1",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "name",
+								"value": "pontepreta",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "email",
+								"value": "jange@gmail.com",
+								"type": "text"
+							},
+							{
+								"key": "senha",
+								"value": "japones",
+								"type": "text"
+							},
+							{
+								"key": "birthdate",
+								"value": "1900-11-08",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "events",
+			"item": [
+				{
+					"name": "addNewEvent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "titulo",
+								"value": "teste",
+								"type": "text"
+							},
+							{
+								"key": "descricao",
+								"value": "BRASILEIRAO 2024 corinthians vai cair?",
+								"type": "text"
+							},
+							{
+								"key": "datainicio",
+								"value": "2024-10-29",
+								"description": "\"YYYY-MM-DD\"",
+								"type": "text"
+							},
+							{
+								"key": "datafim",
+								"value": "2024-12-7",
+								"description": "\"YYYY-MM-DD\"",
+								"type": "text"
+							},
+							{
+								"key": "dataevento",
+								"value": "2024-12-8",
+								"description": "\"YYYY-MM-DD\"",
+								"type": "text"
+							},
+							{
+								"key": "cota",
+								"value": "5",
+								"type": "text"
+							},
+							{
+								"key": "token",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/addNewEvent",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"addNewEvent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "betOnEvent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "email",
+								"value": "pedrao@hotmail.com",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "evento",
+								"value": "4",
+								"description": "id do evento",
+								"type": "text"
+							},
+							{
+								"key": "quantidade_cotas",
+								"value": "2",
+								"type": "text"
+							},
+							{
+								"key": "escolha",
+								"value": "sim",
+								"description": "sim ou não",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/betOnEvent",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"betOnEvent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "searchEvent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "pesquisa",
+								"value": "xitao",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/searchEvent",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"searchEvent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "finishEvent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "id_evento",
+								"value": "2",
+								"type": "text"
+							},
+							{
+								"key": "email_adm",
+								"value": "inoue@adm.gmail.com",
+								"type": "text"
+							},
+							{
+								"key": "senha_adm",
+								"value": "admjapones",
+								"type": "text"
+							},
+							{
+								"key": "resultado",
+								"value": "sim",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/finishEvent",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"finishEvent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getEvents",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "status",
+								"value": "aprovado",
+								"type": "text"
+							},
+							{
+								"key": "titulo",
+								"value": "NOVORIZONTINO VENCE GUARANI",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/getEvents",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"getEvents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteEvent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "id",
+								"value": "6",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/deleteEvent",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"deleteEvent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "evaluateNewEvent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "id_evento",
+								"value": "4",
+								"type": "text"
+							},
+							{
+								"key": "evaluate",
+								"value": "aprovado",
+								"type": "text"
+							},
+							{
+								"key": "email_adm",
+								"value": "inoue@admin.com",
+								"type": "text"
+							},
+							{
+								"key": "senha_adm",
+								"value": "jange",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/evaluateNewEvent",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"evaluateNewEvent"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "financial",
+			"item": [
+				{
+					"name": "addFunds",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "numero_do_cartao",
+								"value": "3123 1231 1321 3241",
+								"type": "text"
+							},
+							{
+								"key": "cvv",
+								"value": "900",
+								"type": "text"
+							},
+							{
+								"key": "data_validade",
+								"value": "07/32",
+								"type": "text"
+							},
+							{
+								"key": "nome_titular",
+								"value": "DANIEL INOUE JANGE",
+								"type": "text"
+							},
+							{
+								"key": "saldo",
+								"value": "100",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/addFunds",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"addFunds"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "withdrawFunds",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "valor",
+								"value": "100",
+								"type": "text"
+							},
+							{
+								"key": "id_carteira",
+								"value": "5",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/withdrawFunds",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"withdrawFunds"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
