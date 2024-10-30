@@ -19,10 +19,12 @@ export namespace EventsManager {
         data_evento: string,
         status: string | undefined,
         valor_cota: number,
+        id_criador: number | undefined,
     }
 
     async function getEventStatus(id_evento:number | null, titulo: string | null): Promise<any>{
             const connection = await conexao();
+
             if(titulo === null){
                 let statusEvento = await connection.execute(
                     `SELECT STATUS
@@ -36,12 +38,14 @@ export namespace EventsManager {
                     return null;
                 }
             }else{
+                titulo = titulo.toUpperCase();
                 let statusEvento = await connection.execute(
                     `SELECT STATUS
                     FROM EVENTOS
                     WHERE TITULO = :titulo`,
                     {titulo: titulo}
                 )
+                console.log(statusEvento.rows);
                 if(statusEvento && statusEvento.rows && statusEvento.rows.length > 0){
                     return (statusEvento.rows as any)[0][0];
                 }else{
@@ -52,6 +56,7 @@ export namespace EventsManager {
     
     async function salvarevento(event: event): Promise<any>{
     const connection= await conexao();
+    event.titulo = event.titulo.toUpperCase();
         let checarTitulo = await connection.execute(
             `SELECT TITULO
              FROM EVENTOS
@@ -67,15 +72,16 @@ export namespace EventsManager {
         }
 
         let criareventos = await connection.execute(
-            `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA) 
-            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'EM ANALISE', :valor_cota, 0, 0)`,
+            `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA, ID_CRIADOR) 
+            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'EM ANALISE', :valor_cota, 0, 0, :id_criador)`,
             {
                 titulo: event.titulo,
                 descricao: event.descricao,
                 data_inicio: event.data_inicio,
                 data_fim: event.data_fim,
                 data_evento: event.data_evento,
-                valor_cota: event.valor_cota
+                valor_cota: event.valor_cota,
+                id_criador: event.id_criador
             },
         )
         connection.commit();
@@ -94,6 +100,7 @@ export namespace EventsManager {
         
         if(eTitulo && eDesc && eDataInicio && eDataFim && eDataEvento  && VC !== undefined && VC > 1){
             if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
+                const user_id = await AccountsManager.checkToken(AccountsManager.last_token as string)
                 const novoevento:event = {
                     id_evento: undefined,
                     titulo: eTitulo,
@@ -102,11 +109,12 @@ export namespace EventsManager {
                     data_fim: eDataFim,
                     data_evento: eDataEvento,
                     status: undefined,
-                    valor_cota: VC
+                    valor_cota: VC,
+                    id_criador: user_id,
                 }
                 const checkTitulo = await salvarevento(novoevento);
                 if(checkTitulo === false){
-                    res.statusCode = 401;
+                    res.statusCode = 409;
                     res.send(`Não foi possivel criar evento. Titulo já existe.`);
                 }else{
                     res.statusCode = 200;
@@ -169,8 +177,21 @@ export namespace EventsManager {
         }
     }
 
-    async function deletarEvento(titulo: string){
+    async function deletarEvento(titulo: string, id_usuario: number): Promise<any>{
         const connection= await conexao()
+        titulo = titulo.toUpperCase();
+        let getIdCriador = await connection.execute(
+            `SELECT ID_CRIADOR
+             FROM EVENTOS
+             WHERE TITULO = :titulo`,
+            {
+                titulo: titulo
+            }
+        )
+        if((getIdCriador.rows as any)[0][0] !== id_usuario){
+            return null;
+        }
+        
         const apagarEvento = await connection.execute(
             `UPDATE EVENTOS 
                 SET STATUS = 'DELETADO' 
@@ -180,18 +201,27 @@ export namespace EventsManager {
         })
         connection.commit();
         console.log("Evento apagado. ", apagarEvento);
+        return true;
     }
 
     export const deleteEventHandler: RequestHandler = async (req: Request, res:Response)=>{
         const dTitulo = req.get("titulo");
         
         const status = await getEventStatus(null, dTitulo as string);
+        console.log(status);
+        console.log(await AccountsManager.checkToken(AccountsManager.last_token as string));
 
         if(dTitulo){
             if( await AccountsManager.checkToken(AccountsManager.last_token as string) !==null && status != null && status !== 'APROVADO'){
-                await deletarEvento(dTitulo);
-                res.statusCode = 200;
-                res.send(`Evento deletado. Id: ${dTitulo}`);
+                const user_id = await AccountsManager.checkToken(AccountsManager.last_token as string);
+                const del = await deletarEvento(dTitulo, user_id);
+                if(del === true){
+                    res.statusCode = 200;
+                    res.send(`Evento deletado. Id: ${dTitulo}`);
+                }else{
+                    res.statusCode = 403;
+                    res.send(`Permissão para deletar evento negada. Evento não pertence a usuario.`);
+                }
             }else{
                 res.statusCode = 401;
                 res.send(`Permissão para deletar evento negada ou evento inexistente.`);
@@ -204,7 +234,11 @@ export namespace EventsManager {
 
     async function evaluateEvent(id:number, evaluate:string): Promise<any>{
         const connection= await conexao()
-        if(evaluate === "aprovado"){
+        if(await getEventStatus(id, null)!=="EM ANALISE"){
+            console.log("Evento não esta em analise.");
+            return false;
+        }
+        else if(evaluate === "aprovado"){
             const avaliarEvento = await connection.execute(
                 `UPDATE EVENTOS 
                     SET STATUS = 'APROVADO' 
@@ -253,7 +287,7 @@ export namespace EventsManager {
                     res.statusCode = 200;
                     res.send(`Evento avaliado.`);
                 }else{
-                    res.statusCode = 400;
+                    res.statusCode = 403;
                     res.send(`Avaliação Invalida.`);
                 }
             }else{
@@ -325,7 +359,7 @@ export namespace EventsManager {
                 if(opcao === "sim"){
                     opt = 1;
                     console.log("Escolha: Sim.");
-                }else if(opcao === "não"){
+                }else if(opcao === "não" || opcao == "nao"){
                     opt = 0;
                     console.log("Escolha: Não.")
                 }else{
@@ -380,13 +414,13 @@ export namespace EventsManager {
         
         if(bTitulo && qtd_cotas &&bEscolha){
             if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
-                const bet = await betOnEvent(AccountsManager.last_token as string, qtd_cotas, bTitulo, bEscolha);
+                const bet = await betOnEvent(AccountsManager.last_token as string, qtd_cotas, bTitulo.toUpperCase(), bEscolha);
                     if(bet === true){
                     res.statusCode = 200;
                     res.send(`Aposta realizada. Cotas:${qtd_cotas}.`);
                 }else{
-                    res.statusCode = 406;
-                    res.send(`Erro ao realizar aposta.`);
+                    res.statusCode = 403;
+                    res.send(`Erro ao realizar aposta. Aposta não aprovada ou usuario sem saldo ou carteira.`);
                 }
             }else{
                 res.statusCode = 401;
@@ -543,11 +577,11 @@ export namespace EventsManager {
                     res.statusCode = 200;
                     res.send(`Aposta finalizada. ID:${id}`);
                 }else{
-                    res.statusCode = 406;
+                    res.statusCode = 409;
                     res.send(`Aposta já finalizada. ID:${id}`);
                 }
             }else{
-                res.statusCode = 406;
+                res.statusCode = 401;
                 res.send(`Conta de moderador não existente.`);
             }
 
