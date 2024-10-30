@@ -12,7 +12,7 @@ Saldo de carteira, transferir dinheiro,
 
 export namespace FinancialManager{
 
-    export type wallet={
+    type wallet={
         wallet_id: number | undefined,
         saldo: number,
         user_id: number 
@@ -34,7 +34,7 @@ export namespace FinancialManager{
         console.log(`Histórico de transações atualizado. Valor:R$${valor} | Tipo:${tipo}`);
     }
 
-    export async function getWalletId(id: number): Promise<any>{
+    async function getWalletId(id: number): Promise<any>{
         const connection = await conexao();
 
         let buscarCarteira = await connection.execute(
@@ -52,7 +52,7 @@ export namespace FinancialManager{
         }
     }
 
-    export async function addWallet(wallet: wallet){
+    async function addWallet(wallet: wallet){
         const connection = await conexao();
 
         let criarCarteira = await connection.execute(
@@ -65,7 +65,7 @@ export namespace FinancialManager{
         console.log("Carteira criada", criarCarteira);
     }
     
-    export async function addFunds(wallet: wallet): Promise<number | null>{
+    async function addFunds(wallet: wallet): Promise<number | null>{
         const connection = await conexao();
 
         let adicionarFundos = await connection.execute(

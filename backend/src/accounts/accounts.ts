@@ -9,7 +9,7 @@ import conexao from "../connection";
 */
 export namespace AccountsManager {
     
-    export type conta_usuario={
+    type conta_usuario={
         user_id: number | undefined,
         email: string,
         nome: string,
@@ -17,7 +17,7 @@ export namespace AccountsManager {
         data_nasc: string
     };
 
-    export async function salvarconta(ua: conta_usuario){
+    async function salvarconta(ua: conta_usuario){
         const connection= await conexao()
 
         let cadastrocontas = await connection.execute(

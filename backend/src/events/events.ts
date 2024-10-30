@@ -10,7 +10,7 @@ import { fstat, stat } from "fs";
 dotenv.config();
 
 export namespace EventsManager {
-    export type event={
+    type event={
         id_evento: number | undefined,
         titulo: string,
         descricao: string,
@@ -21,28 +21,54 @@ export namespace EventsManager {
         valor_cota: number,
     }
 
-    export async function getEventStatus(id_evento:number | null): Promise<any>{
+    async function getEventStatus(id_evento:number | null, titulo: string | null): Promise<any>{
             const connection = await conexao();
-            let statusEvento = await connection.execute(
-                `SELECT STATUS
-                FROM EVENTOS
-                WHERE ID_EVENTO = :id_evento`,
-                {id_evento: id_evento}
-            )
-            if(statusEvento && statusEvento.rows && statusEvento.rows.length > 0){
-                return (statusEvento.rows as any)[0][0];
+            if(titulo === null){
+                let statusEvento = await connection.execute(
+                    `SELECT STATUS
+                    FROM EVENTOS
+                    WHERE ID_EVENTO = :id_evento`,
+                    {id_evento: id_evento}
+                )
+                if(statusEvento && statusEvento.rows && statusEvento.rows.length > 0){
+                    return (statusEvento.rows as any)[0][0];
+                }else{
+                    return null;
+                }
             }else{
-                return null;
+                let statusEvento = await connection.execute(
+                    `SELECT STATUS
+                    FROM EVENTOS
+                    WHERE TITULO = :titulo`,
+                    {titulo: titulo}
+                )
+                if(statusEvento && statusEvento.rows && statusEvento.rows.length > 0){
+                    return (statusEvento.rows as any)[0][0];
+                }else{
+                    return null;
+                }
             }
         }    
     
-    export async function salvarevento(event: event){
-
-    const connection= await conexao()
+    async function salvarevento(event: event): Promise<any>{
+    const connection= await conexao();
+        let checarTitulo = await connection.execute(
+            `SELECT TITULO
+             FROM EVENTOS
+             WHERE TITULO = :titulo`,
+            {
+                titulo: event.titulo
+            }
+        )
+        console.log(`Titulo buscado: ${event.titulo} | Resultado: ${checarTitulo.rows}`);
+        if(checarTitulo && checarTitulo.rows && checarTitulo.rows.length > 0){
+            console.log(`Titulo já existente.`);
+            return false;
+        }
 
         let criareventos = await connection.execute(
             `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA) 
-            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'em analise', :valor_cota, 0, 0)`,
+            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'EM ANALISE', :valor_cota, 0, 0)`,
             {
                 titulo: event.titulo,
                 descricao: event.descricao,
@@ -78,9 +104,14 @@ export namespace EventsManager {
                     status: undefined,
                     valor_cota: VC
                 }
-                salvarevento(novoevento);
-                res.statusCode = 200;
-                res.send(`Novo evento criado. Titulo: ${eTitulo}`);
+                const checkTitulo = await salvarevento(novoevento);
+                if(checkTitulo === false){
+                    res.statusCode = 401;
+                    res.send(`Não foi possivel criar evento. Titulo já existe.`);
+                }else{
+                    res.statusCode = 200;
+                    res.send(`Novo evento criado. Titulo: ${eTitulo}`);
+                }
             }else{
                 res.statusCode = 401;
                 res.send(`Permissão negada.`);
@@ -91,7 +122,7 @@ export namespace EventsManager {
         }
     }
 
-    export async function getEvent(busca: string, req:string): Promise<event[] | null>{
+    async function getEvent(busca: string, req:string): Promise<event[] | null>{
         const connection= await conexao()
         busca = busca.toUpperCase();
         let buscarevento;
@@ -138,31 +169,29 @@ export namespace EventsManager {
         }
     }
 
-    export async function deletarEvento(id: number){
+    async function deletarEvento(titulo: string){
         const connection= await conexao()
         const apagarEvento = await connection.execute(
             `UPDATE EVENTOS 
-                SET STATUS = 'Apagado' 
-                WHERE ID_EVENTO = :id `,
+                SET STATUS = 'DELETADO' 
+                WHERE TITULO = :titulo `,
         {
-            id: id,
+            titulo: titulo,
         })
         connection.commit();
         console.log("Evento apagado. ", apagarEvento);
     }
 
     export const deleteEventHandler: RequestHandler = async (req: Request, res:Response)=>{
-        const dId_evento = req.get("id");
-
-        const ID_EVENTO = dId_evento ? parseInt(dId_evento, 10): undefined;
+        const dTitulo = req.get("titulo");
         
-        const status = await getEventStatus(ID_EVENTO as number);
+        const status = await getEventStatus(null, dTitulo as string);
 
-        if(ID_EVENTO){
+        if(dTitulo){
             if( await AccountsManager.checkToken(AccountsManager.last_token as string) !==null && status != null && status !== 'APROVADO'){
-                await deletarEvento(ID_EVENTO);
+                await deletarEvento(dTitulo);
                 res.statusCode = 200;
-                res.send(`Evento deletado. Id: ${ID_EVENTO}`);
+                res.send(`Evento deletado. Id: ${dTitulo}`);
             }else{
                 res.statusCode = 401;
                 res.send(`Permissão para deletar evento negada ou evento inexistente.`);
@@ -173,7 +202,7 @@ export namespace EventsManager {
         }
     }
 
-    export async function evaluateEvent(id:number, evaluate:string): Promise<any>{
+    async function evaluateEvent(id:number, evaluate:string): Promise<any>{
         const connection= await conexao()
         if(evaluate === "aprovado"){
             const avaliarEvento = await connection.execute(
@@ -237,8 +266,8 @@ export namespace EventsManager {
         }
     }
 
-    export async function betOnEvent(token: string, cotas: number, id_evento: number, opcao: string):Promise<boolean>{ 
-        if(await getEventStatus(id_evento) === "APROVADO"){
+    async function betOnEvent(token: string, cotas: number, titulo: string, opcao: string):Promise<boolean>{ 
+        if(await getEventStatus(null, titulo) === "APROVADO"){
             const connection = await conexao();
             const getUserId = await connection.execute(
                 `SELECT ID_USUARIO FROM USUARIO WHERE TOKEN_SESSAO = :token`,
@@ -260,17 +289,17 @@ export namespace EventsManager {
             console.log(`Id carteira buscado: ${id_carteira}`);
 
             const getValorCotas = await connection.execute(
-                `SELECT VALORCOTA FROM EVENTOS WHERE ID_EVENTO = :id_evento`,
-                {id_evento: id_evento}
+                `SELECT VALORCOTA FROM EVENTOS WHERE TITULO = :titulo`,
+                {titulo: titulo}
             )
 
             let updateQtdCotas = await connection.execute(
                 `UPDATE EVENTOS
                     SET QUANTIDADECOTAS = QUANTIDADECOTAS + :qtd_cotas
-                    WHERE ID_EVENTO = :id_evento`,
+                    WHERE TITULO = :titulo`,
                 {
                     qtd_cotas: cotas,
-                    id_evento: id_evento
+                    titulo: titulo
                 }
             )
             console.log(`Quantidade de cotas atualizada: ${cotas}`, updateQtdCotas); 
@@ -281,10 +310,10 @@ export namespace EventsManager {
             let updateTotalValue = await connection.execute(
                 `UPDATE EVENTOS
                     SET TOTAL_APOSTA = TOTAL_APOSTA + :valor
-                    WHERE ID_EVENTO = :id_evento`,
+                    WHERE TITULO = :titulo`,
                 {
                     valor: valorCotas,
-                    id_evento: id_evento
+                    titulo: titulo
                 }
             )
             console.log(`Valor total das apostas do evento atualizado.`, updateTotalValue);
@@ -303,6 +332,16 @@ export namespace EventsManager {
                     console.log(`Erro ao realizar aposta.`);
                     return false;
                 }
+                
+                let getEventId = await connection.execute(
+                    `SELECT ID_EVENTO
+                     FROM EVENTOS
+                     WHERE TITULO = :titulo`,
+                    {
+                        titulo: titulo
+                    }
+                )
+                const id_evento = (getEventId.rows as any)[0][0];
 
                 let saveBet= await connection.execute(
                     `INSERT INTO HISTORICO_APOSTAS(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
@@ -333,16 +372,15 @@ export namespace EventsManager {
     }
     
     export const betOnEventHandler: RequestHandler = async (req:Request, res:Response)=>{
-        const bIdEvento = req.get("evento");
+        const bTitulo = req.get("evento");
         const bCotas = req.get("quantidade_cotas");
         const bEscolha = req.get("escolha");
 
-        const id_evento = bIdEvento ? parseInt(bIdEvento, 10): undefined;
         const qtd_cotas = bCotas ? parseInt(bCotas, 10): undefined;
         
-        if(id_evento && qtd_cotas &&bEscolha){
+        if(bTitulo && qtd_cotas &&bEscolha){
             if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
-                const bet = await betOnEvent(AccountsManager.last_token as string, qtd_cotas, id_evento, bEscolha);
+                const bet = await betOnEvent(AccountsManager.last_token as string, qtd_cotas, bTitulo, bEscolha);
                     if(bet === true){
                     res.statusCode = 200;
                     res.send(`Aposta realizada. Cotas:${qtd_cotas}.`);
@@ -360,7 +398,7 @@ export namespace EventsManager {
         }
     }
 
-    export async function searchEvent(keyWord: string): Promise<any>{
+    async function searchEvent(keyWord: string): Promise<any>{
         const connection = await conexao();
 
         let searchEvent;
@@ -397,8 +435,8 @@ export namespace EventsManager {
 
     
 
-    export async function finishEvent(id_evento: number, resultado: string): Promise<any> {
-        if(await getEventStatus(id_evento) == "FINALIZADO"){
+    async function finishEvent(id_evento: number, resultado: string): Promise<any> {
+        if(await getEventStatus(id_evento, null) == "FINALIZADO"){
             console.log(`Evento ${id_evento} já finalizado.`);
             return null;
         }
