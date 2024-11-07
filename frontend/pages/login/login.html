@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - JAPABET</title>
+    <link rel="stylesheet" href="res/styles/style.css">
+    <script src="login.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="form-image">
+            <img src="../../res/images/logo_japabet.png" alt="">
+        </div>
+        <div class="form">
+            <h1>Logiaaan</h1>
+            <form>
+                <p>
+                    <label for="fieldEmail">Login:</label><br>
+                    <input type="text" id="fieldEmail" name="email">
+                </p>
+                <p>
+                    <label for="fieldPassword">Senha:</label><br>
+                    <input type="password" id="fieldPassword" name="password">
+                </p>
+                <button type="button" id="btnSignIn" onclick="performSignIn()">Sign In</button>
+        </div>
+            </form>
+        <div id="messageBox">
+            <p id="message"></p>
+        </div>
+    </div>
+</body>
+
+</html>
