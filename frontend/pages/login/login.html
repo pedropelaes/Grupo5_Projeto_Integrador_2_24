@@ -1,38 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - JAPABET</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="res/styles/style.css">
     <script src="login.js"></script>
+    <link rel="shortcut icon" type="imagex/png" href="res/images/logo_japabet.ico">
 </head>
 
-<body>
-    <div class="container">
-        <div class="form-image">
-            <img src="../../res/images/logo_japabet.png" alt="">
-        </div>
-        <div class="form">
-            <h1>Logiaaan</h1>
-            <form>
-                <p>
-                    <label for="fieldEmail">Login:</label><br>
-                    <input type="text" id="fieldEmail" name="email">
-                </p>
-                <p>
-                    <label for="fieldPassword">Senha:</label><br>
-                    <input type="password" id="fieldPassword" name="password">
-                </p>
-                <button type="button" id="btnSignIn" onclick="performSignIn()">Sign In</button>
-        </div>
-            </form>
-        <div id="messageBox">
-            <p id="message"></p>
+<body class="bg-light d-flex justify-content-center align-items-center vh-100">
+    <div class="container shadow p-4 bg-white rounded">
+        <div class="row">
+            <div class="col-md-6 d-flex justify-content-center align-items-center">
+                <img src="res/images/logo_japabet.png" alt="Japabet Logo" class="img-fluid">
+            </div>
+            <div class="col-md-6">
+                <h1 class="text-center mb-4">Login</h1>
+                <form>
+                    <div class="form-group">
+                        <label for="fieldEmail">Login:</label>
+                        <input type="text" id="fieldEmail" name="email" class="form-control" placeholder="Digite o email">
+                    </div>
+                    <div class="form-group">
+                        <label for="fieldPassword">Senha:</label>
+                        <input type="password" id="fieldPassword" name="password" class="form-control"
+                            placeholder="Digite a senha">
+                    </div>
+                    <button type="button" id="btnSignIn" onclick="performSignIn()" class="btn btn-danger btn-block">Entrar</button>
+                </form>
+                <div id="messageBox" class="mt-3">
+                    <p id="message" class="text-center text-danger"></p>
+                </div>
+            </div>
         </div>
     </div>
+
 </body>
 
 </html>
