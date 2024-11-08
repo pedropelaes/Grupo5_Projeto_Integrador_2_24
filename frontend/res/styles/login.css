@@ -1,4 +1,4 @@
-#messageBox{
+.messageBox{
     background-color: darkred;
     border: 3px solid red;
     color: white;
@@ -7,7 +7,13 @@
     display: none;
 }
 
-#messageBox p{
+.messageBox p{
 margin: 10px;
 padding: 0;
+}
+.colorbg{
+    background-color: #a20404;
+}
+.divprincipal{
+    border-radius: 20px;
 }
