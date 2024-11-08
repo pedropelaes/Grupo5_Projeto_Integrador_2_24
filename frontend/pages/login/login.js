@@ -30,6 +30,11 @@ function isValid(email, password){
     }
     return valid;
 }
+function showMessage(messageContent){
+    document.getElementById("success").innerHTML = messageContent;
+    var divMb = document.getElementById("successBox");
+    divMb.style.display = "block";
+}
 
 async function performSignIn(){
     var email = document.getElementById("fieldEmail").value;
@@ -44,22 +49,26 @@ async function performSignIn(){
         const reqHeaders = new Headers();
         reqHeaders.append("Content-Type", "text/plain");
         reqHeaders.append("email", email);
-        //reqHeaders.append("password", password);
+        reqHeaders.append("password", password);
 
         //prosseguir com a chamada do backend.
         const response = await fetch(
-            "http://192.168.7.15:5500/login.html",{
+            "http://192.168.0.10:3000/login",{
                 method: "POST",
                 headers: reqHeaders
             }
         );
-
+        
         if(response.ok){
-            // deu resposta http 200 (exibir sucesso...)
+            cleanError();
+            let message = (await response.status) + " - " + "Login executado.";
+            showMessage(message);
         }else{
             // deu erro
             //mostar o texto de erro...
-            showErrorMessage(response.status)
+            let message = (await response.status) + " - " + (await response.text());
+            showErrorMessage(message);
+            
         }
 
     }

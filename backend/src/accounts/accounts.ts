@@ -113,7 +113,7 @@ export namespace AccountsManager {
 
 export const loginHandler: RequestHandler = async (req:Request,res:Response)=>{
     const pEmail=req.get('email');
-    const pPassword = req.get('senha');
+    const pPassword = req.get('password');
 
     if(pEmail && pPassword){
         const LOGIN = await login(pEmail,pPassword)
