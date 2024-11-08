@@ -36,7 +36,7 @@ function showMessage(messageContent){
     divMb.style.display = "block";
 }
 
-async function performSignIn(){
+async function performLogin(){
     var email = document.getElementById("fieldEmail").value;
     var password = document.getElementById("fieldPassword").value;
 
