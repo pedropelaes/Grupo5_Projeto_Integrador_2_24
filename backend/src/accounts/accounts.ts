@@ -4,9 +4,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 import conexao from "../connection";
 
-/*
-    Nampespace que contém tudo sobre "contas de usuários"
-*/
 export namespace AccountsManager {
     
     export type conta_usuario={
@@ -17,8 +14,24 @@ export namespace AccountsManager {
         data_nasc: string
     };
 
+    async function checkUser(user: conta_usuario): Promise<any>{
+        const connection= await conexao();
+
+        let checarConta = await connection.execute(
+            `SELECT *
+             FROM USUARIO
+             WHERE EMAIL = :email`,
+            {
+                email: user.email
+            }
+        )
+        if(checarConta && checarConta.rows && checarConta.rows.length > 0){
+            return true;
+        }
+    }
+
     export async function salvarconta(ua: conta_usuario){
-        const connection= await conexao()
+        const connection= await conexao();
 
         let cadastrocontas = await connection.execute(
             "INSERT INTO USUARIO(ID_USUARIO, EMAIL, NOME, SENHA, DATA_NASCIMENTO) VALUES(SEQ_USUARIO.NEXTVAL, :email, :nome, :senha, TO_DATE(:data_nasc, 'YYYY-MM-DD'))",
@@ -34,8 +47,7 @@ export namespace AccountsManager {
         console.log("Conta cadastrada. ", cadastrocontas);
     }
     
-    export const signUpHandler: RequestHandler = (req: Request, res: Response) => {
-        // Passo 1 - Receber os parametros para criar a conta
+    export const signUpHandler: RequestHandler = async (req: Request, res: Response) => {
         
         const pName = req.get('name');
         const pEmail = req.get('email');
@@ -45,7 +57,6 @@ export namespace AccountsManager {
         //const idusuario = pId ? parseInt(pId, 10): undefined; //req.get pega uma string, logo é necessario converter o id para int
         
         if(pName && pEmail && pSenha && pBirthdate){
-            // prosseguir com o cadastro... 
             const newAccount: conta_usuario = {
                 user_id: undefined,
                 email: pEmail, 
@@ -53,9 +64,14 @@ export namespace AccountsManager {
                 senha: pSenha,
                 data_nasc: pBirthdate
             }
-            salvarconta(newAccount);
-            res.statusCode = 200; 
-            res.send(`Nova conta cadastrada.`);
+            if(!await checkUser(newAccount)){
+                salvarconta(newAccount);
+                res.statusCode = 200; 
+                res.send(`Nova conta cadastrada.`);
+            }else{
+                res.statusCode = 406;
+                res.send("Email já cadastrado.");
+            }
         }else{
             res.statusCode = 400;
             res.send("Parâmetros inválidos ou faltantes.");

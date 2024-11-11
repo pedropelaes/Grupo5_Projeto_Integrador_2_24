@@ -23,13 +23,28 @@ export namespace EventsManager {
         valor_cota: number,
     }
     
+    async function checkEvent(event: event): Promise<any>{
+        const connection= await conexao();
+        
+        let checarNomeEvento = await connection.execute(
+            `SELECT *
+             FROM EVENTOS
+             WHERE TITULO = :titulo`,
+            {
+                titulo: event.titulo
+            }
+        )
+        if(checarNomeEvento && checarNomeEvento.rows && checarNomeEvento.rows.length > 0){
+            return true;
+        }
+    }
+    
     export async function salvarevento(event: event){
-
     const connection= await conexao()
 
         let criareventos = await connection.execute(
             `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA) 
-            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), :data_inicio, :data_fim, :data_evento, 'em analise', :valor_cota, 0, 0)`,
+            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'em analise', :valor_cota, 0, 0)`,
             {
                 titulo: event.titulo,
                 descricao: event.descricao,
@@ -43,7 +58,7 @@ export namespace EventsManager {
         console.log("Evento criado e cadastrado no banco,", criareventos);
     }
     
-    export const createEventHandler: RequestHandler=(req: Request, res:Response)=>{
+    export const createEventHandler: RequestHandler= async (req: Request, res:Response)=>{
         const eTitulo = req.get("titulo");
         const eDesc = req.get("descricao");
         const eDataInicio = req.get("datainicio");
@@ -64,9 +79,14 @@ export namespace EventsManager {
                 status: undefined,
                 valor_cota: VC
             }
-            salvarevento(novoevento);
-            res.statusCode = 200;
-            res.send(`Novo evento criado. Titulo: ${eTitulo}`);
+            if(!await checkEvent(novoevento)){
+                salvarevento(novoevento);
+                res.statusCode = 200;
+                res.send(`Novo evento criado. Titulo: ${eTitulo}`);
+            }else{
+                res.statusCode = 406;
+                res.send("Nome de evento já cadastrado.");
+            }
         }else{
             res.statusCode=400;
             res.send("Parâmetros invalidos ou faltantes.");
