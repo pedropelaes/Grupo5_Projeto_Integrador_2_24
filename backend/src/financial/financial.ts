@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import conexao from "../connection";
 import { unescape } from "querystring";
+import { AccountsManager } from "../accounts/accounts";
 /*
 tudo dentro desse módulo irá tratar de finanças na plataforma. Ex: 
 Saldo de carteira, transferir dinheiro, 
@@ -11,7 +12,7 @@ Saldo de carteira, transferir dinheiro,
 
 export namespace FinancialManager{
 
-    export type wallet={
+    type wallet={
         wallet_id: number | undefined,
         saldo: number,
         user_id: number 
@@ -33,26 +34,25 @@ export namespace FinancialManager{
         console.log(`Histórico de transações atualizado. Valor:R$${valor} | Tipo:${tipo}`);
     }
 
-    export async function getWalletId(id: number): Promise<number | null>{
+    async function getWalletId(id: number): Promise<any>{
         const connection = await conexao();
 
-        let buscarCarteira: OracleDB.Result<{ ID_WALLET: number }> = await connection.execute(
+        let buscarCarteira = await connection.execute(
             `SELECT * FROM WALLET WHERE ID_USUARIO = :id`,
             {
                 id: id
-            },
-            {outFormat: OracleDB.OUT_FORMAT_OBJECT}
+            }
         )
         console.log("Buscando carteira", id);
         if(buscarCarteira && buscarCarteira.rows && buscarCarteira.rows.length > 0){
             console.log("Carteira encontrada", buscarCarteira.rows);
-            return (buscarCarteira.rows[0].ID_WALLET as number);
+            return ((buscarCarteira.rows as any)[0][0]);
         }else{
             return null;
         }
     }
 
-    export async function addWallet(wallet: wallet){
+    async function addWallet(wallet: wallet){
         const connection = await conexao();
 
         let criarCarteira = await connection.execute(
@@ -65,7 +65,7 @@ export namespace FinancialManager{
         console.log("Carteira criada", criarCarteira);
     }
     
-    export async function addFunds(wallet: wallet): Promise<number | null>{
+    async function addFunds(wallet: wallet): Promise<number | null>{
         const connection = await conexao();
 
         let adicionarFundos = await connection.execute(
@@ -88,29 +88,33 @@ export namespace FinancialManager{
         const fCod = req.get("cvv");
         const fDataValidade = req.get("data_validade");
         const fNomeTitular = req.get("nome_titular");
-        const fId = req.get("id");
         const fSaldo = req.get("saldo");
-
+        
         const SALDO = fSaldo ? parseInt(fSaldo, 10): undefined;
-        const ID = fId ? parseInt(fId, 10): undefined;
 
-        if (fNumCartao && fCod && fDataValidade && fNomeTitular && ID && SALDO){
-            const newWallet: wallet = {
-                wallet_id: undefined,
-                saldo: SALDO,
-                user_id: ID
-            }
-            const id_carteira = await getWalletId(ID);
-            
-            if(id_carteira !== null){
-                const saldo = await addFunds(newWallet);
-                res.statusCode = 200;
-                res.send(`Saldo alterado. Adicionado ${saldo}`)
+        if (fNumCartao && fCod && fDataValidade && fNomeTitular && SALDO){
+            if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
+                const ID: number = ( await AccountsManager.checkToken(AccountsManager.last_token as string) as unknown as number);
+                const newWallet: wallet = {
+                    wallet_id: undefined,
+                    saldo: SALDO,
+                    user_id: ID
+                }
+                const id_carteira = await getWalletId(ID);
+                
+                if(id_carteira !== null){
+                    const saldo = await addFunds(newWallet);
+                    res.statusCode = 200;
+                    res.send(`Saldo alterado. Adicionado ${saldo}`)
+                }else{
+                    await addWallet(newWallet);
+                    const saldo = await addFunds(newWallet);
+                    res.statusCode = 200;
+                    res.send(`Carteira criada e saldo alterado. Adicionado ${saldo}`)
+                }
             }else{
-                await addWallet(newWallet);
-                const saldo = await addFunds(newWallet);
-                res.statusCode = 200;
-                res.send(`Carteira criada e saldo alterado. Adicionado ${saldo}`)
+                res.statusCode = 401;
+                res.send(`Permissão negada.`);
             }
         }else{
             res.statusCode = 400;
@@ -188,20 +192,25 @@ export namespace FinancialManager{
 
     export const withdrawFundsHandler: RequestHandler = async (req: Request, res: Response) => {
         const wValue = req.get("valor");
-        const wIdWallet = req.get("id_carteira");
 
         const valor = wValue ? parseFloat(wValue): undefined;
-        const id = wIdWallet ? parseInt(wIdWallet, 10): undefined;
 
-        if (valor && id){
-            const saldoRetirado = await withdrawnFunds(id, valor, 2);
-            res.statusCode = 200;
-            if(saldoRetirado !== null && saldoRetirado <= 101000){
-                res.send(`Fundos retirados. Valor: R$${saldoRetirado}`);
-            }else if(saldoRetirado !== null && saldoRetirado > 101000){
-                res.send(`Valor limite de saque excedido(R$101.000)`);
+        if (valor){
+            if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
+                const id = (await AccountsManager.checkToken(AccountsManager.last_token as string) as unknown as number);
+                console.log(id);
+                const saldoRetirado = await withdrawnFunds(id, valor, 2);
+                res.statusCode = 200;
+                if(saldoRetirado !== null && saldoRetirado <= 101000){
+                    res.send(`Fundos retirados. Valor: R$${saldoRetirado}`);
+                }else if(saldoRetirado !== null && saldoRetirado > 101000){
+                    res.send(`Valor limite de saque excedido(R$101.000)`);
+                }else{
+                    res.send(`Erro ao retirar fundos.`)
+                }
             }else{
-                res.send(`Erro ao retirar fundos.`)
+                res.statusCode = 401;
+                res.send("Permissão negada.");
             }
         }else{
             res.statusCode = 400;
