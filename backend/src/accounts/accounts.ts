@@ -17,6 +17,22 @@ export namespace AccountsManager {
         data_nasc: string
     };
 
+    async function checkUser(user: conta_usuario): Promise<any>{
+        const connection= await conexao();
+
+        let checarConta = await connection.execute(
+            `SELECT *
+             FROM USUARIO
+             WHERE EMAIL = :email`,
+            {
+                email: user.email
+            }
+        )
+        if(checarConta && checarConta.rows && checarConta.rows.length > 0){
+            return true;
+        }
+    }
+
     async function salvarconta(ua: conta_usuario){
         const connection= await conexao()
 
@@ -35,7 +51,7 @@ export namespace AccountsManager {
         console.log("Conta cadastrada. ", cadastrocontas);
     }
     
-    export const signUpHandler: RequestHandler = (req: Request, res: Response) => {
+    export const signUpHandler: RequestHandler = async (req: Request, res: Response) => {
         // Passo 1 - Receber os parametros para criar a conta
         
         const pName = req.get('name');
@@ -54,9 +70,14 @@ export namespace AccountsManager {
                 senha: pSenha,
                 data_nasc: pBirthdate
             }
-            salvarconta(newAccount);
-            res.statusCode = 200; 
-            res.send(`Nova conta cadastrada.`);
+            if(!await checkUser(newAccount)){
+                salvarconta(newAccount);
+                res.statusCode = 200; 
+                res.send(`Nova conta cadastrada.`);
+            }else{
+                res.statusCode = 406;
+                res.send("Email já cadastrado.");
+            }
         }else{
             res.statusCode = 400;
             res.send("Parâmetros inválidos ou faltantes.");
