@@ -1,3 +1,6 @@
+function switchWindow(){
+    window.location.href = '/frontend/pages/initial/initial.html';
+}
 //Exibir a div com o erro
 function showErrorMessage(messageContent){
     //Atribuir o texto da mensagem no paragrafo
@@ -63,6 +66,7 @@ async function performLogin(){
             cleanError();
             let message = (await response.status) + " - " + "Login executado.";
             showMessage(message);
+            switchWindow();
         }else{
             // deu erro
             //mostar o texto de erro...
