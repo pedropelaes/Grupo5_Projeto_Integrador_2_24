@@ -9,6 +9,7 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="shortcut icon" type="imagex/png" href="/res/images/icone_japabet.ico">
     <link rel="stylesheet" href="/res/styles/createEvent.css">
+    <script src="createEvent.js"></script>
 </head>
 
 <body class=" colorbg d-flex justify-content-center align-items-center vh-100">
@@ -31,19 +32,23 @@
                         placeholder="Digite a Descrição">
                 </div>
                 <div class="form-group mb-2">
-                    <label for="fieldDataInicio">Data de Início</label><br>
+                    <label for="fieldDataInicio">Data de Início(período de apostas)</label><br>
                     <input type="date" id="fieldDataInicio" name="dataInicio" class="form-control">
                 </div>
                 <div class="form-group mb-2">
-                    <label for="fieldDataFim">Data de Término</label><br>
+                    <label for="fieldDataFim">Data de Término(período de apostas)</label><br>
                     <input type="date" id="fieldDataFim" name="dataFim" class="form-control">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="fieldDataEvento">Data do Evento</label><br>
+                    <input type="date" id="fieldDataEvento" name="dataEvento" class="form-control">
                 </div>
                 <div class="form-group mb-2">
                     <label for="fieldValorCota">Valor de cota</label>
                     <input type="number" min="1" step="0.1" id="fieldValorCota" name="valorCota" class="form-control"
                         placeholder="Digite o valor da cota">
                 </div>
-                <button class="btn w-100 py-2 btn-danger"> Criar</button>
+                <button class="btn w-100 py-2 btn-danger" type="button" onclick="performCreate()"> Criar</button>
             </form>
             <div id="messageBox" class="mt-3">
                 <p id="message" class="text-center text-danger"></p>

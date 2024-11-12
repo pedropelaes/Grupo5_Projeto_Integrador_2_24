@@ -1,5 +1,5 @@
 function switchWindow(){
-    window.location.href = '/frontend/pages/initial/initial.html';
+    window.location.href = '/frontend/pages/home/home.html';
 }
 //Exibir a div com o erro
 function showErrorMessage(messageContent){
@@ -52,7 +52,7 @@ async function performLogin(){
         const reqHeaders = new Headers();
         reqHeaders.append("Content-Type", "text/plain");
         reqHeaders.append("email", email);
-        reqHeaders.append("password", password);
+        reqHeaders.append("senha", password);
 
         //prosseguir com a chamada do backend.
         const response = await fetch(
