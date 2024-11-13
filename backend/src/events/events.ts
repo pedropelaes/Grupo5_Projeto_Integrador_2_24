@@ -233,7 +233,7 @@ export namespace EventsManager {
     }
 
     async function evaluateEvent(id:number, evaluate:string): Promise<any>{
-        const connection= await conexao()
+        const connection= await conexao();
         if(await getEventStatus(id, null)!=="EM ANALISE"){
             console.log("Evento não esta em analise.");
             return false;
@@ -262,13 +262,36 @@ export namespace EventsManager {
             )   
             console.log("Aposta reprovada.");
             connection.commit();
-            return true;
+            return "rep";
         }
         else{
             console.log("Avaliação invalida.");
             return false;
         }
         
+    }
+    
+    async function getCreatorEmail(id: number): Promise<any>{
+        const connection= await conexao();
+        let getCreatorId = await connection.execute(
+            `SELECT ID_CRIADOR
+             FROM EVENTOS
+             WHERE ID_EVENTO = :id_evento`,
+            {
+                id_evento: id
+            }
+        )
+        const id_criador = (getCreatorId.rows as any)[0][0];
+        let getCreatorEmail = await connection.execute(
+            `SELECT EMAIL
+             FROM USUARIO
+             WHERE ID_USUARIO = :id_criador`,
+            {
+                id_criador: id_criador
+            }
+        )
+        const email_criador = (getCreatorEmail.rows as any)[0][0];
+        return email_criador;
     }
     
     export const evaluateNewEventHandler: RequestHandler = async (req: Request, res:Response)=>{
@@ -285,8 +308,13 @@ export namespace EventsManager {
                 const avaliacao = await evaluateEvent(ID, eEvaluate);
                 if(avaliacao === true){
                     res.statusCode = 200;
-                    res.send(`Evento avaliado.`);
-                }else{
+                    res.send(`Evento avaliado. Aprovado.`);
+                }else if(avaliacao === "rep"){
+                    const email = await getCreatorEmail(ID);
+                    res.statusCode = 200;
+                    res.send(`Evento avaliado. Reprovado. Email do criador: ${email}`);
+                }
+                else{
                     res.statusCode = 403;
                     res.send(`Avaliação Invalida.`);
                 }
