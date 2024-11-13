@@ -1,3 +1,12 @@
+function dataMinima(){
+    const data = new Date();
+    const d = String(data.getFullYear() - 18) + "-" + String(data.getMonth()+1).padStart(2, '0') + "-" + String(data.getDate()).padStart(2, '0');
+    
+    return d;
+}
+
+document.getElementById("dataNascimento").max = dataMinima();
+
 function showErrorMessage(messageContent){
     document.getElementById("message").innerHTML = messageContent;
     var divMb = document.getElementById("messageBox");
@@ -80,3 +89,4 @@ async function performSignUp(){
     }
 
 }
+

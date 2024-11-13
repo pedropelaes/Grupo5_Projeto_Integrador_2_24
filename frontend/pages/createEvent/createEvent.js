@@ -1,3 +1,53 @@
+function dataDeHoje(){
+    const data = new Date();
+    const d = String(data.getFullYear()) + "-" + String(data.getMonth()+1).padStart(2, '0') + "-" + String(data.getDate()).padStart(2, '0');
+    
+    return d;
+}
+function minDataFim(){
+    document.getElementById("fieldDataFim").min = String(document.getElementById("fieldDataInicio").value);
+}
+function minDataEvento(){
+    const dataFim = (new Date(document.getElementById("fieldDataFim").value + "T00:00:00"));
+    document.getElementById("fieldDataEvento").min = String(dataFim.getFullYear()) + '-' + String(dataFim.getMonth()+1).padStart(2, '0') + '-' + String(dataFim.getDate() + 1).padStart(2, '0');
+}
+function toDate(stringData){
+    return new Date(stringData + "T00:00:00");
+}
+
+window.onload = function(){
+    let dataInicio = document.getElementById("fieldDataInicio");
+    dataInicio.min = dataDeHoje();
+    let dataFim = document.getElementById("fieldDataFim");
+    let dataEvento = document.getElementById("fieldDataEvento");
+    
+    function checkDataInicio(){
+        if(dataInicio.value.length == 0 || toDate(dataInicio.value) > toDate(dataFim.value)){
+            dataFim.disabled = 'disabled';
+            dataFim.value = null;
+        }else{
+            dataFim.disabled = false;
+        }
+    }
+    function checkDataFim(){
+        if(dataFim.value.length == 0 || dataFim.value.length == undefined){
+            dataEvento.disabled = 'disabled';
+        }else if(toDate(dataFim.value) > toDate(dataEvento.value)){
+            dataEvento.value = null;
+            dataEvento.value.length = undefined;
+        }
+        else{
+            dataEvento.disabled = false;
+        }
+    }
+
+    checkDataInicio();
+    checkDataFim();
+
+    dataInicio.addEventListener("input", checkDataInicio);
+    dataFim.addEventListener("input", checkDataFim);
+};
+
 function switchWindow(){
     window.location.href = '/frontend/pages/home/home.html';
 }

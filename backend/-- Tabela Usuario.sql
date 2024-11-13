@@ -29,7 +29,7 @@ CREATE TABLE EVENTOS (
     valorCota INT NOT NULL,                  -- Valor da cota
     quantidadeCotas INT NOT NULL,
     TOTAL_APOSTA INT NOT NULL,               -- Substituído VALOR_COTA por TOTAL_APOSTA
-    RESULTADO_EVENTO VARCHAR2(3),
+    RESULTADO_EVENTO VARCHAR2(5),
     ID_CRIADOR INT,
     CONSTRAINT fk_criador FOREIGN KEY (ID_CRIADOR) REFERENCES Usuario(id_usuario)
 );
@@ -91,7 +91,7 @@ CREATE TABLE MODERADOR (
     DATA_NASCIMENTO DATE NOT NULL
 );
 INSERT INTO MODERADOR(ID_MODERADOR, EMAIL, NOME, SENHA, DATA_NASCIMENTO)
-    VALUES(SEQ_MODERADOR.nextval, 'pedrao@admin.com', 'Pedro Facine', '123456', '10-10-2010');
+    VALUES(SEQ_MODERADOR.nextval, 'admpi2japabet@gmail.com', 'Administrador', 'Dreamteampi2', '13-11-2006');
 COMMIT;
 
 -- Tabela APOSTA

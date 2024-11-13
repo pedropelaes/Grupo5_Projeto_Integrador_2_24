@@ -7,6 +7,7 @@ import conexao from "../connection";
 import { FinancialManager } from "../financial/financial";
 import { AccountsManager } from "../accounts/accounts";
 import { fstat, stat } from "fs";
+import nodemailer from "nodemailer";
 dotenv.config();
 
 export namespace EventsManager {
