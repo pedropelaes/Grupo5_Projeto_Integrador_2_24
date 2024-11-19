@@ -29,7 +29,7 @@ CREATE TABLE EVENTOS (
     valorCota INT NOT NULL,                  -- Valor da cota
     quantidadeCotas INT NOT NULL,
     TOTAL_APOSTA INT NOT NULL,               -- Substituído VALOR_COTA por TOTAL_APOSTA
-    RESULTADO_EVENTO VARCHAR2(3),                 -- Novo campo, pode ser nulo ou não
+    RESULTADO_EVENTO VARCHAR2(5),                 -- Novo campo, pode ser nulo ou não
     ID_CRIADOR INT,
     CONSTRAINT fk_criador FOREIGN KEY (ID_CRIADOR) REFERENCES USUARIO(id_usuario)
 );
