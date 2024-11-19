@@ -1,0 +1,27 @@
+.form-container{
+    max-width: 400px;
+    padding: 1rem;
+}
+.colorbg{
+    background-color:#a20404;
+}
+.fonth1{
+    color: #240000;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 20px;
+    font: weight 50px;;
+}
+.maineee {
+    display: flex; 
+    flex-direction: row;
+    border-radius: 20px;
+    width: 1300px;     
+    height: 500px;      
+    max-width: 1200px;   
+    margin-bottom: 25px;
+    margin-top: 25px;
+    justify-content: flex-start; 
+    align-items: center; 
+    margin: 0 auto;
+    align-self: center;
+}
