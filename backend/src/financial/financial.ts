@@ -200,13 +200,15 @@ export namespace FinancialManager{
                 const id = (await AccountsManager.checkToken(AccountsManager.last_token as string) as unknown as number);
                 console.log(id);
                 const saldoRetirado = await withdrawnFunds(id, valor, 2);
-                res.statusCode = 200;
                 if(saldoRetirado !== null && saldoRetirado <= 101000){
+                    res.statusCode = 200;
                     res.send(`Fundos retirados. Valor: R$${saldoRetirado}`);
                 }else if(saldoRetirado !== null && saldoRetirado > 101000){
+                    res.statusCode = 422;
                     res.send(`Valor limite de saque excedido(R$101.000)`);
                 }else{
-                    res.send(`Erro ao retirar fundos.`)
+                    res.statusCode = 422;
+                    res.send(`Erro ao retirar fundos. Valor não permitido.`)
                 }
             }else{
                 res.statusCode = 401;

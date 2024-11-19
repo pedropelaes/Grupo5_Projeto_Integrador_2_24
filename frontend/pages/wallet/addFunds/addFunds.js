@@ -1,14 +1,86 @@
-function performAddFunds() {
-    const amount = document.getElementById("amount").value;
-    const messageBox = document.getElementById("message");
-    const successBox = document.getElementById("success");
+function showErrorMessage(messageContent){
+    document.getElementById("message").innerHTML = messageContent;
+    var divMb = document.getElementById("messageBox");
+    divMb.style.display = "block";
+}
+function showMessage(messageContent){
+    document.getElementById("success").innerHTML = messageContent;
+    var divMb = document.getElementById("successBox");
+    divMb.style.display = "block";
+}
+function cleanError(){
+    var divMb = document.getElementById("messageBox");
+    divMb.style.display = "none";
+}
+function switchWindow(){
+    window.location.href = '/frontend/pages/wallet/wallet.html';
+}
+function isValid(cartao, nome, validade, cvv, valor){
+    var valid = false;
+    if(cartao.length > 0 && nome.length > 6 && validade.length > 0 && cvv.length > 0 && valor.length){
+        valid = true
+    }
+    else if(cartao.length == 0 && nome.length == 0 && validade.length == 0 && cvv.length == 0 && valor.length == 0){
+        showErrorMessage("Por favor, preencha todos os campos.");
+    }
+    else if(cartao.length == 0){
+        showErrorMessage("Por favor, digite o número do cartao.")
+    }
+    else if(nome.length == 0){
+        showErrorMessage("Por favor, digite o nome do titular.");
+    }
+    else if(validade.length == 0){
+        showErrorMessage("Por favor, digite a data de validade.")
+    } 
+    else if(cvv.length == 0){
+        showErrorMessage("Por favor, digite o código de segurança.");
+    }
+    else if(valor.length == 0){
+        showErrorMessage("Por favor, digite o valor a ser depositado.");
+    }
+    else if(valor < 0){
+        showErrorMessage("Por favor, digite um valor valido.");
+    }
+    return valid
+    }
+async function performAddFunds() {
+    var nCartao = document.getElementById("cardNumber").value;
+    var nome = document.getElementById("cardName").value;
+    var validade = document.getElementById("expiryDate").value;
+    var cvv = document.getElementById("cvv").value;
+    var valor = document.getElementById("amount").value;
+    
+    if(isValid(nCartao, nome, validade, cvv, valor)){
+        const reqHeaders = new Headers();
+        reqHeaders.append("Content-Type", "text/plain");
+        reqHeaders.append("numero_do_cartao", nCartao);
+        reqHeaders.append("nome_titular", nome);
+        reqHeaders.append("data_validade", validade);
+        reqHeaders.append("cvv", cvv);
+        reqHeaders.append("saldo", valor);
 
-    if (!amount || amount <= 0) {
-        messageBox.textContent = "Por favor, insira um valor válido.";
-        successBox.textContent = "";
-        return;
+        const response = await fetch(
+            "http://192.168.0.10:3000/addFunds",{
+                method: "POST",
+                headers: reqHeaders
+            }
+        );
+        if(response.ok){
+            cleanError();
+            let message = (await response.status) + " - " + "Valor depositado.";
+            showMessage(message);
+            switchWindow();
+        }else{
+            let message = (await response.status) + " - " + (await response.text());
+            if(await response.status == 401){
+                message = message + " É necessário fazer login para depositar."
+                showErrorMessage(message);
+            }else{
+                showErrorMessage(message);
+            }
+        }
+        
     }
 
-    messageBox.textContent = "";
-    successBox.textContent = `Fundos de R$ ${amount} adicionados com sucesso!`;
+
 }
