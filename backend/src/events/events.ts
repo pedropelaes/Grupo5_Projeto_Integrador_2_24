@@ -10,6 +10,16 @@ import { fstat, stat } from "fs";
 import nodemailer from "nodemailer";
 dotenv.config();
 
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_ADM, 
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  
 export namespace EventsManager {
     type event={
         id_evento: number | undefined,
@@ -21,6 +31,33 @@ export namespace EventsManager {
         status: string | undefined,
         valor_cota: number,
         id_criador: number | undefined,
+    }
+
+    async function sendEmail(to: string, subject: string, ){
+        
+        const mailOptions = {
+            from: process.env.EMAIL_USER,  
+            to: to,                        
+            subject: subject,              
+            text:`
+            Prezado(a) cliente,
+
+            Agradecemos por utilizar a JapaBet como sua plataforma de criação de eventos. Informamos que o evento criado não foi aprovado devido ao motivo descrito no assunto desta mensagem.
+
+            Para que o evento possa ser aceito, solicitamos que o recrie seguindo as adequações necessárias. Estamos à disposição para esclarecer quaisquer dúvidas ou fornecer orientações.
+
+            Atenciosamente,
+            Equipe JapaBet`,                    
+        };
+
+        try{
+            const info = await transporter.sendMail(mailOptions);
+            console.log(`{Email enviado. ${info.response}}`);
+            return {success: true, info};
+        }catch(error){
+            console.log(`Erro ao enviar email. ${error}`);
+            return {success: false, error}
+        }
     }
 
     async function getEventStatus(id_evento:number | null, titulo: string | null): Promise<any>{
@@ -300,10 +337,11 @@ export namespace EventsManager {
         const eEvaluate = req.get("evaluate");
         const fEmail = req.get("email_adm");
         const fSenha = req.get("senha_adm");
+        const eMotivo = req.get("motivo");
 
         const ID = eId ? parseInt(eId, 10): undefined;
         
-        if(ID && eEvaluate && fEmail && fSenha){
+        if(ID && eEvaluate && fEmail && fSenha && eMotivo){
             const loginADM = await AccountsManager.loginADM(fEmail, fSenha);
             if(loginADM !== null){
                 const avaliacao = await evaluateEvent(ID, eEvaluate);
@@ -312,8 +350,10 @@ export namespace EventsManager {
                     res.send(`Evento avaliado. Aprovado.`);
                 }else if(avaliacao === "rep"){
                     const email = await getCreatorEmail(ID);
+                    const subject: string = "Evento reprovado. Motivo: "+eMotivo;
+                    const infoEmail = await sendEmail(email, subject);
                     res.statusCode = 200;
-                    res.send(`Evento avaliado. Reprovado. Email do criador: ${email}`);
+                    res.send(`Evento avaliado. Reprovado por motivo: ${eMotivo}. Email do criador: ${email}. ${infoEmail.success}`);
                 }
                 else{
                     res.statusCode = 403;
