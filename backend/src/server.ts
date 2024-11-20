@@ -31,6 +31,7 @@ routes.post('/withdrawFunds', FinancialManager.withdrawFundsHandler);
 routes.post('/betOnEvent', EventsManager.betOnEventHandler);
 routes.post('/finishEvent', EventsManager.finishEventHandler);
 routes.post('/searchEvent', EventsManager.searchEventHandler);
+routes.post('/wallet', FinancialManager.walletHandler);
 
 
 

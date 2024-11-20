@@ -220,4 +220,63 @@ export namespace FinancialManager{
         }
     }
 
+    async function getWalletInfo(token: string | null): Promise<any>{
+        if(token == null){
+            return false;
+        }else{
+            const connection = await conexao();
+
+            const getUserId = await connection.execute(
+                `SELECT ID_USUARIO FROM USUARIO WHERE TOKEN_SESSAO = :token`,
+                {token: token}
+            )
+            console.log(`User id: ${getUserId.rows}`);
+            const user_id = (getUserId.rows as any)[0][0]
+            const id_carteira = await getWalletId(user_id)
+            console.log(`Wallet id: ${id_carteira} ${typeof id_carteira}`);
+
+            const getFinancialInfo = await connection.execute(
+                `SELECT TO_CHAR(w.SALDO, '9999999990.00'), ht.ID_TRANSACAO, ht.TIPO_TRANSACAO, TO_CHAR(ht.DATA_TRANSACAO, 'DD-MM-YYYY'), TO_CHAR(ht.HORA_TRANSACAO, 'HH24:MI:SS'), ht.VALOR
+                FROM WALLET w
+                        JOIN HISTORICO_TRANSACAO ht ON w.ID_WALLET = ht.FK_ID_WALLET
+                WHERE w.ID_WALLET = :id_wallet`,
+                
+                {id_wallet: id_carteira}
+            )
+            //0-saldo 1-id_Transacao 2-tipo 3-data 4-hora 5-valor
+
+            const getBetsInfo = await connection.execute(
+                `SELECT TO_CHAR(ha.DATA_APOSTA, 'DD-MM-YYYY'), TO_CHAR(ha.HORA_APOSTA, 'HH24:MI:SS'), e.TITULO, ha.VALOR, 
+                 CASE 
+                    WHEN ha.OPCAO_APOSTA = 1 THEN 'Sim'
+                    WHEN ha.OPCAO_APOSTA = 0 THEN 'Não'
+                 END AS OPCAO_APOSTA
+                 FROM HISTORICO_APOSTAS ha
+                    JOIN EVENTOS e ON ha.FK_ID_EVENTO = e.ID_EVENTO
+                 WHERE ha.FK_ID_USUARIO = :id_user`,
+                {id_user: user_id}
+            )
+            //0-data 1-hora 2-titulo 3-valor 4-escolha
+            
+            return{ 
+                financialInfo: getFinancialInfo.rows as any, 
+                betsInfo: getBetsInfo.rows as any 
+            };
+        }
+
+    }
+
+    export const walletHandler: RequestHandler = async (req: Request, res: Response) => {
+        const token = AccountsManager.last_token;
+        const result = await getWalletInfo(token);
+        console.log(result);
+        if(result === false){
+            res.statusCode = 401;
+            res.send(`Login não executado`);
+        }else{
+            res.status(200).json(result);
+
+        }
+    }
+
 }
