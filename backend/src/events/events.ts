@@ -507,7 +507,7 @@ export namespace EventsManager {
         let searchEvent;
         keyWord = `%${keyWord}%`;
         searchEvent = await connection.execute(
-            `SELECT ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, RESULTADO_EVENTO 
+            `SELECT ID_EVENTO, TITULO, DESCRICAO, TO_CHAR(DATA_INICIO, 'DD/MM'), TO_CHAR(DATA_FIM, 'DD/MM'), DATA_EVENTO, STATUS, VALORCOTA, RESULTADO_EVENTO 
             FROM EVENTOS 
             WHERE DESCRICAO LIKE UPPER(:keyword) OR TITULO LIKE UPPER(:keyword)`,
             {
@@ -659,4 +659,38 @@ export namespace EventsManager {
             res.send(`Parâmetros invalidos ou faltantes`);
         }
     }
+
+    async function specifyEvents(){
+        const connection = await conexao();
+        
+        const mostBets = await connection.execute(
+            `SELECT TITULO, DESCRICAO
+             FROM (
+                SELECT e.TITULO, e.DESCRICAO,
+                    ROW_NUMBER() OVER (ORDER BY COUNT(ha.FK_ID_EVENTO) DESC) AS RNUM
+                FROM HISTORICO_APOSTAS ha
+                    JOIN EVENTOS e ON ha.FK_ID_EVENTO = e.ID_EVENTO
+                GROUP BY e.TITULO, e.DESCRICAO
+             ) WHERE RNUM <= 3`
+        )
+         mostBets.rows as any;
+    
+        const endDateNear = await connection.execute(
+            `SELECT e.TITULO, e.DESCRICAO   
+            FROM EVENTOS e
+            WHERE e.DATA_FIM < SYSDATE + 10`
+        )
+        return {
+            maisApostados: mostBets.rows as any,
+            maisProximos: endDateNear.rows as any
+        }
+        
+    }
+    
+    export const showEventsHandler: RequestHandler = async (req:Request, res:Response) =>{
+        const events = await specifyEvents()
+        console.log(events);
+        res.status(200).json(events);
+    }
+
 }
