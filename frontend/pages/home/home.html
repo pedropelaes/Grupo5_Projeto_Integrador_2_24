@@ -9,6 +9,9 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="shortcut icon" type="imagex/png" href="/frontend/res/images/icone_japabet.ico">
     <link rel="stylesheet" href="/frontend/res/styles/home.css">
+    <link rel="stylesheet"
+     href="https://use.fontawesome.com/releases/v5.12.1/css/all.css" 
+     crossorigin="anonymous">
     <script src="home.js"></script>
 </head>
 
@@ -48,9 +51,16 @@
                     </li>
                 </ul>
                 <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Buscar eventos" aria-label="Search" id="fieldBusca">
-                    <button class="btn btn-danger" type="button" onclick="searchEventbyButton()" id="botaoBusca" >Buscar</button>
+                    <div class="input-group" style="position: relative;;">
+                        <input class="form-control" type="search" placeholder="Buscar eventos" aria-label="Search" id="fieldBusca">
+                        <button class="btn btn-danger" type="button" onclick="searchEventbyButton()" id="botaoBusca" >
+                        <i class="fas fa-search"></i> Buscar</button>
+                    </div>
                 </form>
+                <div>
+                    <button class="btn btn-primary" type="button" onclick="switchWindow('/frontend/pages/createEvent/createEvent.html')">
+                        <i class="fas fa-plus"></i> Criar evento</button>
+                </div>
             </div>
         </div>
     </nav>

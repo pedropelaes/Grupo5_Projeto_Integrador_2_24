@@ -63,7 +63,7 @@ function cleanError(){
 function isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota){
     var valid = false;
 
-    if(titulo.length > 0 && descricao.length > 0 && dataInicio.length > 0 && dataFim.length > 0 && valorCota.length > 0){
+    if(titulo.length > 0 && descricao.length > 0 && dataInicio.length > 0 && dataFim.length > 0 && valorCota.length > 0 && valorCota >= 1){
         valid = true;
     }
     else if(titulo.length == 0 && descricao.length == 0 && dataInicio.length == 0 && dataFim.length == 0 && valorCota.length == 0){
@@ -84,6 +84,9 @@ function isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota){
     else if(dataEvento.length == 0){
         showErrorMessage("Insira a data do evento");
     }
+    else if(valorCota < 1){
+        showErrorMessage("Insira um valor maior que R$1,00.");
+    }
     else{
         showErrorMessage("Insira o valor da cota.");
     }
@@ -102,6 +105,7 @@ async function performCreate(){
     var dataFim = document.getElementById("fieldDataFim").value;
     var dataEvento = document.getElementById("fieldDataEvento").value;
     var valorCota = document.getElementById("fieldValorCota").value;
+    console.log(valorCota);
 
     if(isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota)){
         const reqHeaders = new Headers();

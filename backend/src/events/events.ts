@@ -136,7 +136,7 @@ export namespace EventsManager {
 
         const VC = eValorCota ? parseInt(eValorCota, 10): undefined; //converte a requisição do valor da cota para numero   
         
-        if(eTitulo && eDesc && eDataInicio && eDataFim && eDataEvento  && VC !== undefined && VC > 1){
+        if(eTitulo && eDesc && eDataInicio && eDataFim && eDataEvento  && VC !== undefined && VC >= 1){
             if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
                 const user_id = await AccountsManager.checkToken(AccountsManager.last_token as string)
                 const novoevento:event = {
@@ -507,7 +507,7 @@ export namespace EventsManager {
         let searchEvent;
         keyWord = `%${keyWord}%`;
         searchEvent = await connection.execute(
-            `SELECT ID_EVENTO, TITULO, DESCRICAO, TO_CHAR(DATA_INICIO, 'DD/MM'), TO_CHAR(DATA_FIM, 'DD/MM'), DATA_EVENTO, STATUS, VALORCOTA, RESULTADO_EVENTO 
+            `SELECT ID_EVENTO, TITULO, DESCRICAO, TO_CHAR(DATA_INICIO, 'DD/MM/YYYY') AS INICIO, TO_CHAR(DATA_FIM, 'DD/MM/YYYY') AS FIM, TO_CHAR(DATA_EVENTO, 'DD-MM/YYYY') AS DATA, STATUS, VALORCOTA, RESULTADO_EVENTO 
             FROM EVENTOS 
             WHERE DESCRICAO LIKE UPPER(:keyword) OR TITULO LIKE UPPER(:keyword)`,
             {
@@ -670,6 +670,7 @@ export namespace EventsManager {
                     ROW_NUMBER() OVER (ORDER BY COUNT(ha.FK_ID_EVENTO) DESC) AS RNUM
                 FROM HISTORICO_APOSTAS ha
                     JOIN EVENTOS e ON ha.FK_ID_EVENTO = e.ID_EVENTO
+                WHERE e.STATUS = 'APROVADO'
                 GROUP BY e.TITULO, e.DESCRICAO
              ) WHERE RNUM <= 3`
         )
@@ -678,7 +679,9 @@ export namespace EventsManager {
         const endDateNear = await connection.execute(
             `SELECT e.TITULO, e.DESCRICAO   
             FROM EVENTOS e
-            WHERE e.DATA_FIM < SYSDATE + 10`
+            WHERE e.DATA_FIM < SYSDATE + 10 AND e.STATUS = 'APROVADO'
+            ORDER BY DATA_FIM
+            FETCH FIRST 3 ROWS ONLY`
         )
         return {
             maisApostados: mostBets.rows as any,

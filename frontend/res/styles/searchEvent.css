@@ -1,8 +1,3 @@
-.center-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 .btn-vermais {
     background-color: #f2d4ae !important; /* Change the background color */
     border-color: #f2d4ae !important;   /* Change the border color */
@@ -14,3 +9,11 @@
     background-color: #e4c2a1 !important; /* Slightly darker shade for hover effect */
     border-color: #e4c2a1 !important;
 }
+
+.modal-backdrop {
+    display: block !important;
+    z-index: 1040 !important; /* Make sure it's behind the modal content */
+}
+.modal {
+    z-index: 1051 !important;
+}   

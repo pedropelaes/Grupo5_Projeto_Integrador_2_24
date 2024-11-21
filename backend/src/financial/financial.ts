@@ -239,7 +239,8 @@ export namespace FinancialManager{
                 `SELECT TO_CHAR(w.SALDO, '9999999990.00'), ht.ID_TRANSACAO, ht.TIPO_TRANSACAO, TO_CHAR(ht.DATA_TRANSACAO, 'DD-MM-YYYY'), TO_CHAR(ht.HORA_TRANSACAO, 'HH24:MI:SS'), ht.VALOR
                 FROM WALLET w
                         JOIN HISTORICO_TRANSACAO ht ON w.ID_WALLET = ht.FK_ID_WALLET
-                WHERE w.ID_WALLET = :id_wallet`,
+                WHERE w.ID_WALLET = :id_wallet
+                ORDER BY ht.DATA_TRANSACAO DESC, ht.HORA_TRANSACAO DESC`,
                 
                 {id_wallet: id_carteira}
             )
@@ -253,7 +254,8 @@ export namespace FinancialManager{
                  END AS OPCAO_APOSTA
                  FROM HISTORICO_APOSTAS ha
                     JOIN EVENTOS e ON ha.FK_ID_EVENTO = e.ID_EVENTO
-                 WHERE ha.FK_ID_USUARIO = :id_user`,
+                 WHERE ha.FK_ID_USUARIO = :id_user
+                 ORDER BY ha.DATA_APOSTA DESC, ha.HORA_APOSTA DESC`,
                 {id_user: user_id}
             )
             //0-data 1-hora 2-titulo 3-valor 4-escolha

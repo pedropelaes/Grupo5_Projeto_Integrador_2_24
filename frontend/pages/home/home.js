@@ -1,8 +1,7 @@
 function switchWindow(caminho){
     window.location.href = caminho;
 }
-
-let busca = null;
+var busca = null;
 
 function searchEvent(categoria){
     busca = categoria;
@@ -40,7 +39,8 @@ async function PerformShowEvents(){
                     <div class="card-body">
                         <h5 class="card-title">${maisProximos[i][0]}</h5>
                         <p class="card-text">${maisProximos[i][1]}</p>
-                        <a href="#" class="btn btn-danger">Apostar</a>
+                        <a href="#" class="btn btn-danger"><i class="fas fa-coins"></i> Apostar</a>
+                        <a href="#" class="btn btn-vermais"><i class="fas fa-search"></i> Ver mais</a>
                 </div>`
 
             divProximos.appendChild(event);
@@ -56,13 +56,15 @@ async function PerformShowEvents(){
                     <div class="card-body">
                         <h5 class="card-title">${maisApostados[i][0]}</h5>
                         <p class="card-text">${maisApostados[i][1]}</p>
-                        <a href="#" class="btn btn-danger">Apostar</a>
+                        <a href="#" class="btn btn-danger"><i class="fas fa-coins"></i> Apostar</a>
+                        <a href="#" class="btn btn-vermais"><i class="fas fa-search"></i> Ver mais</a>
                 </div>`
 
             divMaisApostados.appendChild(event);
         }
     }
 }
+
 
 window.onload = function(){
     PerformShowEvents();
