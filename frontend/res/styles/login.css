@@ -1,6 +1,25 @@
-.colorbg{
-    background-color: #a20404;
-}
-.divprincipal{
+.container{
     border-radius: 20px;
+}
+.colorbg{
+    background-color:#a20404;
+}
+.fonth1{
+    color: #240000;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 20px;
+
+}
+.main-container {
+    display: flex; 
+    border-radius: 20px;
+    width: 1300px;     
+    height: auto;      
+    justify-content: center; 
+    align-items: center; 
+}
+
+.main-container img {
+    margin-left: 75px;
+    height: 500px;
 }
