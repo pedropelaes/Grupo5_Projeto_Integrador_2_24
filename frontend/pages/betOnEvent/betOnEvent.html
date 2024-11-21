@@ -9,7 +9,7 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="shortcut icon" type="imagex/png" href="/frontend/res/images/icone_japabet.ico">
     <link rel="stylesheet" href="/frontend/res/styles/betOnEvent.css">
-    <script src="createEvent.js"></script>
+    <script src="betOnEvent.js"></script>
 </head>
 
 <body class=" colorbg d-flex justify-content-center align-items-center vh-100">
@@ -32,14 +32,14 @@
                         placeholder="Digite o valor da cota">
                 </div>
                 <div class="form-group mb-2">
-                    <label for="fieldEscolha">Opção</label>
-                    <select id="fieldEscolha" name="opcao" class="form-control" required>
+                    <label for="fieldOpcao">Opção</label>
+                    <select id="fieldOpcao" name="opcao" class="form-control" required>
                         <option value="" disabled selected>Selecione uma opção</option>
                         <option value="Sim">Sim</option>
                         <option value="Não">Não</option>
                     </select>
                 </div>
-                <button class="btn w-100 py-2 btn-danger" type="button" onclick="performCreate()"> Criar</button>
+                <button class="btn w-100 py-2 btn-danger" type="button" onclick="performBetOnEvent()"> Criar</button>
             </form>
             <div id="messageBox" class="mt-3">
                 <p id="message" class="text-center text-danger"></p>
