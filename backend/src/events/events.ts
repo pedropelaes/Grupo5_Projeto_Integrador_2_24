@@ -507,9 +507,11 @@ export namespace EventsManager {
         let searchEvent;
         keyWord = `%${keyWord}%`;
         searchEvent = await connection.execute(
-            `SELECT ID_EVENTO, TITULO, DESCRICAO, TO_CHAR(DATA_INICIO, 'DD/MM/YYYY') AS INICIO, TO_CHAR(DATA_FIM, 'DD/MM/YYYY') AS FIM, TO_CHAR(DATA_EVENTO, 'DD-MM/YYYY') AS DATA, STATUS, VALORCOTA, RESULTADO_EVENTO 
+            `SELECT ID_EVENTO, TITULO, DESCRICAO, TO_CHAR(DATA_INICIO, 'DD/MM/YYYY') AS INICIO, TO_CHAR(DATA_FIM, 'DD/MM/YYYY') AS FIM, TO_CHAR(DATA_EVENTO, 'DD/MM/YYYY') AS DATA, STATUS, VALORCOTA, RESULTADO_EVENTO 
             FROM EVENTOS 
-            WHERE DESCRICAO LIKE UPPER(:keyword) OR TITULO LIKE UPPER(:keyword)`,
+            WHERE (DESCRICAO LIKE UPPER(:keyword) OR TITULO LIKE UPPER(:keyword)) 
+            AND STATUS = 'APROVADO' 
+            AND SYSDATE < DATA_EVENTO`,
             {
                 keyword: keyWord,
             },

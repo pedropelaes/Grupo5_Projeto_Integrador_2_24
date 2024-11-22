@@ -17,7 +17,7 @@ function searchEventbyButton(){
 
 async function PerformShowEvents(){
     const response = await fetch(
-        "http://192.168.0.10:3000/home",{
+        "http://172.16.232.30:3000/home",{
             method: "POST",
         }
     );

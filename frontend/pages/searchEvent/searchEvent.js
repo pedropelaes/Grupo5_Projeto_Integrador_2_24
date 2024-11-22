@@ -1,3 +1,4 @@
+
 function switchWindow(caminho){
     window.location.href = caminho;
 }
@@ -14,23 +15,25 @@ async function performSearch(){
     reqHearders.append("Content-Type", "text/plain");
     reqHearders.append("pesquisa", busca);
 
+    let ip = sessionStorage.getItem("ip");
     const response = await fetch(
-        "http://192.168.0.10:3000/searchEvent",{
+        "http://172.16.232.30:3000/searchEvent",{
             method: "POST",
             headers: reqHearders
         }
     );
     if(response.ok){
         const resultado = await response.json();
-        console.log(resultado);
-        console.log(resultado["Resultado da busca"][0]);
-        console.log(resultado["Resultado da busca"].length);
         let buscaVazia = document.getElementById("buscaVazia");
         if(resultado["Resultado da busca"] != null){
             buscaVazia.hidden = true;
         }else{
             buscaVazia.hidden = false;
+            return;
         }
+        console.log(resultado);
+        console.log(resultado["Resultado da busca"][0]);
+        console.log(resultado["Resultado da busca"].length);
 
         const div = document.getElementById("resultado");
 
