@@ -168,7 +168,7 @@ export namespace EventsManager {
         }
     }
 
-    async function getEvent(busca: string, req:string): Promise<event[] | null>{
+    async function getEvent(busca: string, req:string): Promise<any>{
         const connection= await conexao();
         if(req !== "usuario"){
             busca = busca.toUpperCase();
@@ -197,7 +197,9 @@ export namespace EventsManager {
             )
             
             buscarevento = await connection.execute(
-                `SELECT * FROM EVENTOS WHERE ID_CRIADOR = :id_user`,
+                `SELECT TO_CHAR(DATA_EVENTO, 'DD/MM/YYYY') AS DATA_EVENTO, TO_CHAR(DATA_FIM, 'DD/MM/YYYY') AS DATA_FIM, TO_CHAR(DATA_INICIO, 'DD/MM/YYYY') AS DATA_INICIO, DESCRICAO, TITULO, VALORCOTA
+                 FROM EVENTOS 
+                 WHERE ID_CRIADOR = :id_user`,
                 {id_user: (getUserId.rows as any)[0][0]},
                 {outFormat: OracleDB.OUT_FORMAT_OBJECT}
             )
@@ -205,10 +207,25 @@ export namespace EventsManager {
         
         console.log("Busca: ", busca);
         if(buscarevento && buscarevento.rows && buscarevento.rows.length > 0){
-            return buscarevento.rows as event[];
+            return buscarevento.rows;
         }else{
             return null;
         }
+    }
+
+    async function getUserEmail(token:string): Promise<any>{
+        const connection = await conexao();
+        let buscarEmail = await connection.execute(
+            `SELECT EMAIL
+             FROM USUARIO
+             WHERE TOKEN_SESSAO = :token`,
+            {token: token}
+        )
+        console.log(buscarEmail.rows);
+        if(buscarEmail && buscarEmail.rows && buscarEmail.rows.length > 0){
+            return (buscarEmail.rows as any)[0][0];
+        }
+        return null;
     }
 
     export const getEventHandler: RequestHandler=async(req: Request, res:Response)=>{
@@ -223,8 +240,15 @@ export namespace EventsManager {
             const busca = await getEvent(gTitulo, "titulo");
             res.status(200).json({"Resultado da busca":busca});
         }else if(gEmail){
-            const busca = await getEvent(gEmail, "usuario");
-            res.status(200).json({"Resultado da busca":busca});
+            const token = AccountsManager.last_token;
+            if(token === null){
+                res.statusCode = 401;
+                res.send("É necessário estar logado para visualizar seus eventos.");
+            }else{
+                const email = await getUserEmail(token as string);
+                const busca = await getEvent(email, "usuario");
+                res.status(200).json({"Resultado da busca":busca});
+            }
         }
         else{
             res.statusCode=400;
