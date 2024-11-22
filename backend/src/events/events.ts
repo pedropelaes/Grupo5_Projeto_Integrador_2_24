@@ -199,7 +199,7 @@ export namespace EventsManager {
             buscarevento = await connection.execute(
                 `SELECT TO_CHAR(DATA_EVENTO, 'DD/MM/YYYY') AS DATA_EVENTO, TO_CHAR(DATA_FIM, 'DD/MM/YYYY') AS DATA_FIM, TO_CHAR(DATA_INICIO, 'DD/MM/YYYY') AS DATA_INICIO, DESCRICAO, TITULO, VALORCOTA
                  FROM EVENTOS 
-                 WHERE ID_CRIADOR = :id_user`,
+                 WHERE ID_CRIADOR = :id_user AND STATUS = 'APROVADO'`,
                 {id_user: (getUserId.rows as any)[0][0]},
                 {outFormat: OracleDB.OUT_FORMAT_OBJECT}
             )

@@ -107,9 +107,9 @@ function showModalVerMais(evento){
                 </div>
                 <div class="modal-body">
                     <p>${evento[1]}</p>
-                    <p>Período de apostas: ${evento["INICIO"]} - ${evento[2]}</p>
-                    <p>Data do evento: ${evento[3]}</p>
-                    <p>Valor da cota: ${evento[4]}</p>
+                    <p>Período de apostas: ${evento[2]} - ${evento[3]}</p>
+                    <p>Data do evento: ${evento[4]}</p>
+                    <p>Valor da cota: ${evento[5]}</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
