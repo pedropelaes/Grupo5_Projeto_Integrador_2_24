@@ -56,7 +56,7 @@ async function performLogin(){
 
         //prosseguir com a chamada do backend.
         const response = await fetch(
-            "http://192.168.0.10:3000/login",{
+            window.IP +"/login",{
                 method: "POST",
                 headers: reqHeaders
             }

@@ -44,7 +44,7 @@ function isValid(name, email, password, date ){
     else if(password.length == 0){
         showErrorMessage("Por favor, digite sua senha.");
     }
-    else if(password.length <= 6){
+    else if(password.length < 6){
         showErrorMessage("Senha Invalida, no mínimo 6 caracteres.");
     }
     else if(date.length == 0){
@@ -71,7 +71,7 @@ async function performSignUp(){
         reqHeaders.append("birthdate", date);
 
         const response = await fetch (
-            "http://192.168.0.10:3000/signUp",{
+            window.IP +"/signUp",{
                 method: "POST",
                 headers: reqHeaders
             }

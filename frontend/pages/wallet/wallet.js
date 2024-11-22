@@ -11,7 +11,7 @@ function showErrorMessage(messageContent){
 }
 async function PerformWalletInfo(){
     const response = await fetch(
-        "http://192.168.0.10:3000/wallet",{
+        window.IP +"/wallet",{
             method: "POST",
         }
     );

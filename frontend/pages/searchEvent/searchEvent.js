@@ -17,7 +17,7 @@ async function performSearch(){
 
     let ip = sessionStorage.getItem("ip");
     const response = await fetch(
-        "http://172.16.232.30:3000/searchEvent",{
+        window.IP +"/searchEvent",{
             method: "POST",
             headers: reqHearders
         }

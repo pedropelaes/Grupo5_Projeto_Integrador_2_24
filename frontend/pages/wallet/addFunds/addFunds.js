@@ -60,7 +60,7 @@ async function performAddFunds() {
         reqHeaders.append("saldo", valor);
 
         const response = await fetch(
-            "http://192.168.0.10:3000/addFunds",{
+            window.IP +"/addFunds",{
                 method: "POST",
                 headers: reqHeaders
             }

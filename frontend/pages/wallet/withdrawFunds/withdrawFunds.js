@@ -84,7 +84,7 @@ async function performAddFunds(){
         reqHeaders.append("valor", valor);
 
         const response = await fetch(
-            "http://192.168.0.10:3000/withdrawFunds",{
+            window.IP +"/withdrawFunds",{
                 method: "POST",
                 headers: reqHeaders
             }
