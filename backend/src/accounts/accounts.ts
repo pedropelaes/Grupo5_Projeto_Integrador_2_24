@@ -112,7 +112,7 @@ export namespace AccountsManager {
 
     async function login(email:string, senha:string): Promise<any> {
 
-        const connection= await conexao()
+        const connection= await conexao();
 
         let accountsRows = await connection.execute(
             'SELECT * FROM USUARIO WHERE EMAIL = :email AND SENHA = :senha',
@@ -133,6 +133,21 @@ export namespace AccountsManager {
 
     }
 
+    async function checkFirstLogin(email: string): Promise<any>{
+        const connection= await conexao();
+
+        let checkTokenNull = await connection.execute(
+            `SELECT TOKEN_SESSAO
+             FROM USUARIO
+             WHERE EMAIL = :email`,
+            {email: email}
+        )
+        if((checkTokenNull.rows as any)[0][0] === null){
+            return true;
+        }
+        return false;
+    }
+
     export let last_token: string | null = null;
 
     export const loginHandler: RequestHandler = async (req:Request,res:Response)=>{
@@ -142,9 +157,10 @@ export namespace AccountsManager {
         if(pEmail && pPassword){
             const LOGIN = await login(pEmail,pPassword)
             if(LOGIN !== null){
+                const primeiroLogin = await checkFirstLogin(pEmail);
                 const token = await createSessionToken(pEmail, pPassword);
                 res.statusCode = 200;
-                res.send(`Login executado. Sessão: ${token}`);
+                res.json({"Login executado, Sessão":token, "Primeiro login":primeiroLogin});
                 last_token = token;
             }else{
                 res.statusCode = 401;

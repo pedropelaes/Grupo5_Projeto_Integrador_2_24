@@ -1,5 +1,5 @@
-function switchWindow(){
-    window.location.href = '/frontend/pages/home/home.html';
+function switchWindow(caminho){
+    window.location.href = caminho;
 }
 //Exibir a div com o erro
 function showErrorMessage(messageContent){
@@ -64,9 +64,43 @@ async function performLogin(){
         
         if(response.ok){
             cleanError();
-            let message = (await response.status) + " - " + "Login executado.";
-            showMessage(message);
-            switchWindow();
+            let object = await response.json()
+            console.log(object["Primeiro login"]);
+            if(object["Primeiro login"] == true){
+                const modalPrimeiroLogin = document.createElement("div");
+                modalPrimeiroLogin.innerHTML = `
+                <div class="modal fade" id="modalPrimeiroLogin" tabindex="-1" aria-labelledby="modalPrimeiroLoginLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalPrimeiroLoginLabel">Seja bem-vindo à JapaBet</h5>
+                            </div>
+                            <div class="modal-body">
+                                <p>Este é seu primeiro login. Gostaria de adicionar saldo à sua carteira?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mais tarde</button>
+                                <button type="button" class="btn btn-primary" onclick="switchWindow('/frontend/pages/wallet/addFunds/addFunds.html')">Fazer depósito</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                ;
+                document.body.appendChild(modalPrimeiroLogin);
+                const modal = new bootstrap.Modal(document.getElementById("modalPrimeiroLogin"));
+                modal.show();
+
+                modalPrimeiroLogin.addEventListener("hidden.bs.modal", function () {
+                    switchWindow('/frontend/pages/home/home.html');
+                    modal.dispose();
+                    modalPrimeiroLogin.remove();
+                });
+            }else{
+                let message = (await response.status) + " - " + "Login executado.";
+                showMessage(message);
+                switchWindow('/frontend/pages/home/home.html');
+            }
+            
         }else{
             // deu erro
             //mostar o texto de erro...

@@ -130,6 +130,20 @@ export namespace FinancialManager{
             {wallet_id: wallet_id}
         );
 
+        let checarTotalSaqueDia = await connection.execute(
+            `SELECT SUM(VALOR)
+             FROM HISTORICO_TRANSACAO
+             WHERE FK_ID_WALLET = :id_wallet 
+             AND TRUNC(DATA_TRANSACAO) = TRUNC(SYSDATE)
+             AND TIPO_TRANSACAO = 'SAQUE'`,
+            {id_wallet: wallet_id}
+        )
+
+        if((checarTotalSaqueDia.rows as any)[0][0] + valor > 101000){
+            console.log("Valor limite de saque diario excedido.")
+            return null;
+        }
+
         const saldoConta = (checarFundos.rows as any)[0][0];
         if(modo === 2){
             if(saldoConta !== undefined && saldoConta >= valor && valor <= 101000){

@@ -1,8 +1,10 @@
-
 function switchWindow(caminho){
     window.location.href = caminho;
 }
-
+function bet(titulo){
+    switchWindow("/frontend/pages/betOnEvent/betOnEvent.html")
+    sessionStorage.setItem("titulo", titulo);
+}
 function searchEventbyButton(){
     pesquisa = document.getElementById("fieldBusca").value;
     sessionStorage.setItem("busca", pesquisa);
@@ -47,19 +49,19 @@ async function performSearch(){
                     <div class="card-body">
                         <h5 class="card-title">${resultado["Resultado da busca"][i]["TITULO"]}</h5>
                         <p class="card-text">${resultado["Resultado da busca"][i]["DESCRICAO"]}</p>
-                        <a href="#" class="btn btn-danger"><i class="fas fa-coins"></i> Apostar</a>
+                        <a href="#" class="btn btn-danger" type="button" onclick="bet('${resultado["Resultado da busca"][i]["TITULO"]}')"><i class="fas fa-coins"></i> Apostar</a>
                         <a href="#" class="btn btn-vermais">
                             <i class="fas fa-search"></i> Ver mais</a>
                 </div>`
 
             let eventoVerMais = event.querySelector(".btn-vermais");
             
-            
+            console.log(i);
             const modalFunction = function(){
                 console.log(resultado["Resultado da busca"][i]);
                 showModalVerMais(resultado["Resultado da busca"][i]);
             }
-
+            
             eventoVerMais.addEventListener("click", modalFunction);
 
             div.appendChild(event);

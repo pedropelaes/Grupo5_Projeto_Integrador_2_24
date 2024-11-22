@@ -169,8 +169,10 @@ export namespace EventsManager {
     }
 
     async function getEvent(busca: string, req:string): Promise<event[] | null>{
-        const connection= await conexao()
-        busca = busca.toUpperCase();
+        const connection= await conexao();
+        if(req !== "usuario"){
+            busca = busca.toUpperCase();
+        }
         let buscarevento;
         if(req === "status"){
             buscarevento = await connection.execute(
@@ -188,6 +190,17 @@ export namespace EventsManager {
                 },
                 {outFormat: OracleDB.OUT_FORMAT_OBJECT}
             ) 
+        }else if(req === "usuario"){
+            const getUserId = await connection.execute(
+                `SELECT ID_USUARIO FROM USUARIO WHERE EMAIL = :email`,
+                {email: busca}
+            )
+            
+            buscarevento = await connection.execute(
+                `SELECT * FROM EVENTOS WHERE ID_CRIADOR = :id_user`,
+                {id_user: (getUserId.rows as any)[0][0]},
+                {outFormat: OracleDB.OUT_FORMAT_OBJECT}
+            )
         }
         
         console.log("Busca: ", busca);
@@ -201,12 +214,16 @@ export namespace EventsManager {
     export const getEventHandler: RequestHandler=async(req: Request, res:Response)=>{
         const gStatus = req.get("status");
         const gTitulo = req.get("titulo");
+        const gEmail = req.get("usuario");
 
         if(gStatus){
             const busca = await getEvent(gStatus, "status");
             res.status(200).json({"Resultado da busca":busca});
         }else if(gTitulo){
             const busca = await getEvent(gTitulo, "titulo");
+            res.status(200).json({"Resultado da busca":busca});
+        }else if(gEmail){
+            const busca = await getEvent(gEmail, "usuario");
             res.status(200).json({"Resultado da busca":busca});
         }
         else{
@@ -666,20 +683,21 @@ export namespace EventsManager {
         const connection = await conexao();
         
         const mostBets = await connection.execute(
-            `SELECT TITULO, DESCRICAO
-             FROM (
-                SELECT e.TITULO, e.DESCRICAO,
+            `SELECT TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, VALORCOTA
+            FROM (
+                SELECT e.TITULO, e.DESCRICAO, TO_CHAR(e.DATA_INICIO, 'DD/MM/YYYY') AS DATA_INICIO, TO_CHAR(e.DATA_FIM, 'DD/MM/YYYY') AS DATA_FIM, TO_CHAR(e.DATA_EVENTO, 'DD/MM/YYYY') AS DATA_EVENTO, e.VALORCOTA,
                     ROW_NUMBER() OVER (ORDER BY COUNT(ha.FK_ID_EVENTO) DESC) AS RNUM
                 FROM HISTORICO_APOSTAS ha
-                    JOIN EVENTOS e ON ha.FK_ID_EVENTO = e.ID_EVENTO
+                JOIN EVENTOS e ON ha.FK_ID_EVENTO = e.ID_EVENTO
                 WHERE e.STATUS = 'APROVADO'
-                GROUP BY e.TITULO, e.DESCRICAO
-             ) WHERE RNUM <= 3`
+                GROUP BY e.TITULO, e.DESCRICAO, e.DATA_INICIO, e.DATA_FIM, e.DATA_EVENTO, e.VALORCOTA
+            ) subquery
+            WHERE RNUM <= 3`
         )
          mostBets.rows as any;
     
         const endDateNear = await connection.execute(
-            `SELECT e.TITULO, e.DESCRICAO   
+            `SELECT e.TITULO, e.DESCRICAO, TO_CHAR(e.DATA_INICIO, 'DD/MM/YYYY'), TO_CHAR(e.DATA_FIM, 'DD/MM/YYYY'), TO_CHAR(e.DATA_EVENTO, 'DD/MM/YYYY'), e.VALORCOTA   
             FROM EVENTOS e
             WHERE e.DATA_FIM < SYSDATE + 10 AND e.STATUS = 'APROVADO'
             ORDER BY DATA_FIM

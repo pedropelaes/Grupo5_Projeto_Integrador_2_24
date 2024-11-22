@@ -1,4 +1,4 @@
-
+var titulo = sessionStorage.getItem("titulo");
 
 function showErrorMessage(messageContent){
     document.getElementById("message").innerHTML = messageContent;
@@ -65,13 +65,23 @@ async function performBetOnEvent(){
         if (response.status == 200){
             cleanError();
             let message = (await response.status) + " - " + "Aposta realizada.";
-            showMessage(message);
-            //switchWindow();
+            //showMessage(message);
+            alert(message)
+            switchWindow();
+            titulo = null;
         }
         else {
             let message = (await response.status) + " - " + (await response.text());
-            showErrorMessage(message);
+            if(await response.status == 401){
+                showErrorMessage(message+" É necessário estar logado para apostar.");
+            }else{
+                showErrorMessage(message);
+            }
         }
     }
 
+}
+
+window.onload = function(){
+    document.getElementById("fieldTitulo").value = titulo;
 }

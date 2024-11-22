@@ -1,0 +1,11 @@
+.btn-vermais {
+    background-color: #f2d4ae !important; /* Change the background color */
+    border-color: #f2d4ae !important;   /* Change the border color */
+    color: #ffffff !important;         /* Adjust the text color if needed */
+    color: black !important;
+}
+
+.btn-vermais:hover {
+    background-color: #e4c2a1 !important; /* Slightly darker shade for hover effect */
+    border-color: #e4c2a1 !important;
+}
