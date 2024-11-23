@@ -1,15 +1,8 @@
-function switchWindow(caminho){
-    window.location.href = caminho;
-}
-function bet(titulo){
-    switchWindow("/frontend/pages/betOnEvent/betOnEvent.html")
-    sessionStorage.setItem("titulo", titulo);
-}
-function searchEventbyButton(){
-    pesquisa = document.getElementById("fieldBusca").value;
-    sessionStorage.setItem("busca", pesquisa);
-    switchWindow("/frontend/pages/searchEvent/searchEvent.html");
-}
+import { switchWindow, bet, searchEventbyButton } from "../home/home.js";
+window.switchWindow = switchWindow;
+window.bet = bet;
+window.searchEventbyButton = searchEventbyButton;
+
 
 async function performSearch(){
     let busca = sessionStorage.getItem("busca")
@@ -112,21 +105,22 @@ function showModalVerMais(evento){
 }
 
 window.onload = function(){
-
-    performSearch();
-    
-    let campoBusca = document.getElementById("fieldBusca");
-    let botaoBusca = document.getElementById("botaoBusca");
-    
-    function checkBuscar(){
-        if(campoBusca.value.trim().length == 0){
-            botaoBusca.disabled = true;
-        }else{
-            botaoBusca.disabled = false;
+    if(window.location.pathname.includes("searchEvent.html")){
+        performSearch();
+        
+        let campoBusca = document.getElementById("fieldBusca");
+        let botaoBusca = document.getElementById("botaoBusca");
+        
+        function checkBuscar(){
+            if(campoBusca.value.trim().length == 0){
+                botaoBusca.disabled = true;
+            }else{
+                botaoBusca.disabled = false;
+            }
         }
-    }
 
-    checkBuscar();
+        checkBuscar();
 
-    campoBusca.addEventListener("input", checkBuscar);
+        campoBusca.addEventListener("input", checkBuscar);
+}
 }

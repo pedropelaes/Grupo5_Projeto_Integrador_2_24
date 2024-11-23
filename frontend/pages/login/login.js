@@ -1,8 +1,7 @@
-function switchWindow(caminho){
-    window.location.href = caminho;
-}
+import { switchWindow } from "../home/home.js";
+window.switchWindow = switchWindow;
 //Exibir a div com o erro
-function showErrorMessage(messageContent){
+export function showErrorMessage(messageContent){
     //Atribuir o texto da mensagem no paragrafo
     document.getElementById("message").innerHTML = messageContent;
     var divMb = document.getElementById("messageBox");
@@ -10,7 +9,7 @@ function showErrorMessage(messageContent){
     divMb.style.display = "block";
 }
 //função que oculta o erro (ocult a div)
-function cleanError(){
+export function cleanError(){
     var divMb = document.getElementById("messageBox");
     divMb.style.display = "none";
 }
@@ -23,17 +22,17 @@ function isValid(email, password){
         valid = true;
     }
     else if(email.length == 0 && password.length == 0){
-        showErrorMessage("Please type your email and password.");
+        showErrorMessage("Por favor digite seu email e senha.");
     }
     else if(email.length == 0){
-        showErrorMessage("Please fill email field.");
+        showErrorMessage("Por favor, preencha o campo do email.");
     }
     else{
-        showErrorMessage("Please fill password field.");
+        showErrorMessage("Por favor, preencha o campo da senha.");
     }
     return valid;
 }
-function showMessage(messageContent){
+export function showMessage(messageContent){
     document.getElementById("success").innerHTML = messageContent;
     var divMb = document.getElementById("successBox");
     divMb.style.display = "block";
@@ -111,3 +110,4 @@ async function performLogin(){
 
     }
 }
+window.performLogin = performLogin;

@@ -143,7 +143,7 @@ export namespace FinancialManager{
             console.log("Valor limite de saque diario excedido.")
             return null;
         }
-
+        console.log((checarFundos.rows as any));
         const saldoConta = (checarFundos.rows as any)[0][0];
         if(modo === 2){
             if(saldoConta !== undefined && saldoConta >= valor && valor <= 101000){
@@ -213,7 +213,8 @@ export namespace FinancialManager{
             if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
                 const id = (await AccountsManager.checkToken(AccountsManager.last_token as string) as unknown as number);
                 console.log(id);
-                const saldoRetirado = await withdrawnFunds(id, valor, 2);
+                const id_carteira = await getWalletId(id);
+                const saldoRetirado = await withdrawnFunds(id_carteira, valor, 2);
                 if(saldoRetirado !== null && saldoRetirado <= 101000){
                     res.statusCode = 200;
                     res.send(`Fundos retirados. Valor: R$${saldoRetirado}`);

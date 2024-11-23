@@ -1,23 +1,26 @@
-function switchWindow(caminho){
+export function switchWindow(caminho){
     window.location.href = caminho;
 }
-function bet(titulo){
+window.switchWindow = switchWindow;
+export function bet(titulo){
     switchWindow("/frontend/pages/betOnEvent/betOnEvent.html")
     sessionStorage.setItem("titulo", titulo);
 }
-var busca = null;
+window.bet = bet;
 
 function searchEvent(categoria){
-    busca = categoria;
     sessionStorage.setItem("busca", categoria);
     switchWindow("/frontend/pages/searchEvent/searchEvent.html");
     
 }
-function searchEventbyButton(){
-    pesquisa = document.getElementById("fieldBusca").value;
+window.searchEvent = searchEvent;
+
+export function searchEventbyButton(){
+    let pesquisa = document.getElementById("fieldBusca").value;
     sessionStorage.setItem("busca", pesquisa);
     switchWindow("/frontend/pages/searchEvent/searchEvent.html");
 }
+window.searchEventbyButton = searchEventbyButton;
 
 async function PerformShowEvents(){
     const response = await fetch(
@@ -130,21 +133,24 @@ function showModalVerMais(evento){
 
 }
 
+
 window.onload = function(){
-    PerformShowEvents();
-    
-    let campoBusca = document.getElementById("fieldBusca");
-    let botaoBusca = document.getElementById("botaoBusca");
-    
-    function checkBuscar(){
-        if(campoBusca.value.trim().length == 0){
-            botaoBusca.disabled = true;
-        }else{
-            botaoBusca.disabled = false;
+    if(window.location.pathname.includes("home")){
+        PerformShowEvents();
+        
+        let campoBusca = document.getElementById("fieldBusca");
+        let botaoBusca = document.getElementById("botaoBusca");
+        
+        function checkBuscar(){
+            if(campoBusca.value.trim().length == 0){
+                botaoBusca.disabled = true;
+            }else{
+                botaoBusca.disabled = false;
+            }
         }
+
+        checkBuscar();
+
+        campoBusca.addEventListener("input", checkBuscar);
     }
-
-    checkBuscar();
-
-    campoBusca.addEventListener("input", checkBuscar);
 }

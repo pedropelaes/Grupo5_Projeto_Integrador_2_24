@@ -1,20 +1,9 @@
-function switchWindow(caminho){
-    window.location.href = caminho;
-}
-function bet(titulo){
-    switchWindow("/frontend/pages/betOnEvent/betOnEvent.html")
-    sessionStorage.setItem("titulo", titulo);
-}
-function searchEventbyButton(){
-    pesquisa = document.getElementById("fieldBusca").value;
-    sessionStorage.setItem("busca", pesquisa);
-    switchWindow("/frontend/pages/searchEvent/searchEvent.html");
-}
-function showErrorMessage(messageContent){
-    document.getElementById("message").innerHTML = messageContent;
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "block";
-}
+import { switchWindow, bet, searchEventbyButton } from "../home/home.js";
+import { showErrorMessage } from "../login/login.js";
+window.switchWindow = switchWindow;
+window.bet = bet;
+window.searchEventbyButton = searchEventbyButton;
+
 
 async function PerformMyEvents(){
     const reqHeaders = new Headers();
@@ -100,20 +89,22 @@ function showModalVerMais(evento){
 
 }
 window.onload = function(){
-    PerformMyEvents()
+    if(window.location.pathname.includes("myEvents")){
+        PerformMyEvents()
 
-    let campoBusca = document.getElementById("fieldBusca");
-    let botaoBusca = document.getElementById("botaoBusca");
-    
-    function checkBuscar(){
-        if(campoBusca.value.trim().length == 0){
-            botaoBusca.disabled = true;
-        }else{
-            botaoBusca.disabled = false;
+        let campoBusca = document.getElementById("fieldBusca");
+        let botaoBusca = document.getElementById("botaoBusca");
+        
+        function checkBuscar(){
+            if(campoBusca.value.trim().length == 0){
+                botaoBusca.disabled = true;
+            }else{
+                botaoBusca.disabled = false;
+            }
         }
-    }
 
-    checkBuscar();
+        checkBuscar();
 
-    campoBusca.addEventListener("input", checkBuscar);
+        campoBusca.addEventListener("input", checkBuscar);
+}
 }

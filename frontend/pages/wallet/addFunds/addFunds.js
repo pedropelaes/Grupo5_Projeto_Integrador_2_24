@@ -1,23 +1,9 @@
-function showErrorMessage(messageContent){
-    document.getElementById("message").innerHTML = messageContent;
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "block";
-}
-function showMessage(messageContent){
-    document.getElementById("success").innerHTML = messageContent;
-    var divMb = document.getElementById("successBox");
-    divMb.style.display = "block";
-}
-function cleanError(){
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "none";
-}
-function switchWindow(){
-    window.location.href = '/frontend/pages/wallet/wallet.html';
-}
+import { switchWindow } from "/frontend/pages/home/home.js";
+import { showErrorMessage, cleanError, showMessage } from "/frontend/pages/login/login.js";
+
 function isValid(cartao, nome, validade, cvv, valor){
     var valid = false;
-    if(cartao.length > 0 && nome.length > 6 && validade.length > 0 && cvv.length > 0 && valor.length){
+    if(cartao.length > 0 && nome.length > 0 && validade.length > 0 && cvv.length > 0 && valor.length){
         valid = true
     }
     else if(cartao.length == 0 && nome.length == 0 && validade.length == 0 && cvv.length == 0 && valor.length == 0){
@@ -51,6 +37,7 @@ async function performAddFunds() {
     var valor = document.getElementById("amount").value;
     
     if(isValid(nCartao, nome, validade, cvv, valor)){
+        console.log("a");
         const reqHeaders = new Headers();
         reqHeaders.append("Content-Type", "text/plain");
         reqHeaders.append("numero_do_cartao", nCartao);
@@ -69,7 +56,7 @@ async function performAddFunds() {
             cleanError();
             let message = (await response.status) + " - " + "Valor depositado.";
             showMessage(message);
-            switchWindow();
+            switchWindow('/frontend/pages/wallet/wallet.html');
         }else{
             let message = (await response.status) + " - " + (await response.text());
             if(await response.status == 401){
@@ -81,6 +68,5 @@ async function performAddFunds() {
         }
         
     }
-
-
 }
+window.performAddFunds = performAddFunds;

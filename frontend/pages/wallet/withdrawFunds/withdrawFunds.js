@@ -1,20 +1,13 @@
+import { switchWindow } from "/frontend/pages/home/home.js";
+import { showErrorMessage, cleanError, showMessage } from "/frontend/pages//login/login.js";
+
 function toggleInputField() {
     const method = document.querySelector('input[name="metodoSaque"]:checked').value;
     document.getElementById('pixField').style.display = method === 'pix' ? 'block' : 'none';
     document.getElementById('contaField').style.display = method === 'conta' ? 'block' : 'none';
 }
-function switchWindow(){
-    window.location.href = '/frontend/pages/wallet/wallet.html';
-}
-function showErrorMessage(messageContent){
-    document.getElementById("message").innerHTML = messageContent;
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "block";
-}
-function cleanError(){
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "none";
-}
+window.toggleInputField = toggleInputField;
+
 function isValid(valor, Cpix, Cconta, chavePix, nome, cpf, conta, banco, agencia){
     var valid = false;
 
@@ -58,13 +51,8 @@ function isValid(valor, Cpix, Cconta, chavePix, nome, cpf, conta, banco, agencia
     }
     return valid;
 }
-function showMessage(messageContent){
-    document.getElementById("success").innerHTML = messageContent;
-    var divMb = document.getElementById("successBox");
-    divMb.style.display = "block";
-}
 
-async function performAddFunds(){
+async function performWithdrawFunds(){
     var valor = document.getElementById("fieldSacar").value;
     var Cpix = document.getElementById("saquePix");
     var Cconta = document.getElementById("saqueConta");
@@ -93,7 +81,7 @@ async function performAddFunds(){
             cleanError();
             let message = (await response.status) + " - " + "Valor sacado.";
             showMessage(message);
-            switchWindow();
+            switchWindow('/frontend/pages/wallet/wallet.html');
         }else{
             let message = (await response.status) + " - " + (await response.text());
             if(await response.status == 401){
@@ -105,3 +93,4 @@ async function performAddFunds(){
         }
     }
 }
+window.performWithdrawFunds = performWithdrawFunds;

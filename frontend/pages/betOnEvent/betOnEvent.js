@@ -1,24 +1,7 @@
-var titulo = sessionStorage.getItem("titulo");
+import { switchWindow } from "../home/home.js";
+import { showErrorMessage, cleanError, showMessage } from "../login/login.js";
 
-function showErrorMessage(messageContent){
-    document.getElementById("message").innerHTML = messageContent;
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "block";
-}
-function cleanError(){
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "none";
-}
-function showMessage(messageContent){
-    document.getElementById("success").innerHTML = messageContent;
-    var divMb = document.getElementById("successBox");
-    divMb.style.display = "block";
-}
-
-function switchWindow(){
-    window.location.href = '/frontend/pages/home/home.html';
-}
-
+window.titulo = sessionStorage.getItem("titulo");
 
 function isValid(titulo, qtdCotas, opcao){
     var valid = false;
@@ -67,7 +50,7 @@ async function performBetOnEvent(){
             let message = (await response.status) + " - " + "Aposta realizada.";
             //showMessage(message);
             alert(message)
-            switchWindow();
+            switchWindow("/frontend/pages/home/home.html");
             titulo = null;
         }
         else {
@@ -81,7 +64,8 @@ async function performBetOnEvent(){
     }
 
 }
+window.performBetOnEvent = performBetOnEvent;
 
 window.onload = function(){
-    document.getElementById("fieldTitulo").value = titulo;
+    document.getElementById("fieldTitulo").value = window.titulo;
 }

@@ -1,14 +1,7 @@
-function switchAddFunds(){
-    window.location.href = '/frontend/pages/wallet/addFunds/addFunds.html';
-}
-function switchWithdraw(){
-    window.location.href = '/frontend/pages/wallet/withdrawFunds/withdrawFunds.html';
-}
-function showErrorMessage(messageContent){
-    document.getElementById("message").innerHTML = messageContent;
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "block";
-}
+import { switchWindow } from "/frontend/pages/home/home.js";
+import { showErrorMessage } from "/frontend/pages/login/login.js";
+window.switchWindow = switchWindow;
+
 async function PerformWalletInfo(){
     const response = await fetch(
         window.IP +"/wallet",{
@@ -56,5 +49,7 @@ async function PerformWalletInfo(){
     }
 }
 window.onload = function(){
-    PerformWalletInfo();
+    if(window.location.pathname.includes("wallet.html")){
+        PerformWalletInfo();
+    }
 }

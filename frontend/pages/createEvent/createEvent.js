@@ -1,3 +1,6 @@
+import { switchWindow } from "../home/home.js";
+import { showErrorMessage, cleanError, showMessage } from "../login/login.js";
+
 function dataDeHoje(){
     const data = new Date();
     const d = String(data.getFullYear()) + "-" + String(data.getMonth()+1).padStart(2, '0') + "-" + String(data.getDate()).padStart(2, '0');
@@ -7,59 +10,16 @@ function dataDeHoje(){
 function minDataFim(){
     document.getElementById("fieldDataFim").min = String(document.getElementById("fieldDataInicio").value);
 }
+window.minDataFim = minDataFim;
 function minDataEvento(){
     const dataFim = (new Date(document.getElementById("fieldDataFim").value + "T00:00:00"));
     document.getElementById("fieldDataEvento").min = String(dataFim.getFullYear()) + '-' + String(dataFim.getMonth()+1).padStart(2, '0') + '-' + String(dataFim.getDate() + 1).padStart(2, '0');
 }
+window.minDataEvento = minDataEvento;
 function toDate(stringData){
     return new Date(stringData + "T00:00:00");
 }
 
-window.onload = function(){
-    let dataInicio = document.getElementById("fieldDataInicio");
-    dataInicio.min = dataDeHoje();
-    let dataFim = document.getElementById("fieldDataFim");
-    let dataEvento = document.getElementById("fieldDataEvento");
-    
-    function checkDataInicio(){
-        if(dataInicio.value.length == 0 || toDate(dataInicio.value) > toDate(dataFim.value)){
-            dataFim.disabled = 'disabled';
-            dataFim.value = null;
-        }else{
-            dataFim.disabled = false;
-        }
-    }
-    function checkDataFim(){
-        if(dataFim.value.length == 0 || dataFim.value.length == undefined){
-            dataEvento.disabled = 'disabled';
-        }else if(toDate(dataFim.value) > toDate(dataEvento.value)){
-            dataEvento.value = null;
-            dataEvento.value.length = undefined;
-        }
-        else{
-            dataEvento.disabled = false;
-        }
-    }
-
-    checkDataInicio();
-    checkDataFim();
-
-    dataInicio.addEventListener("input", checkDataInicio);
-    dataFim.addEventListener("input", checkDataFim);
-};
-
-function switchWindow(){
-    window.location.href = '/frontend/pages/home/home.html';
-}
-function showErrorMessage(messageContent){
-    document.getElementById("message").innerHTML = messageContent;
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "block";
-}
-function cleanError(){
-    var divMb = document.getElementById("messageBox");
-    divMb.style.display = "none";
-}
 function isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota){
     var valid = false;
 
@@ -91,11 +51,6 @@ function isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota){
         showErrorMessage("Insira o valor da cota.");
     }
     return valid;
-}
-function showMessage(messageContent){
-    document.getElementById("success").innerHTML = messageContent;
-    var divMb = document.getElementById("successBox");
-    divMb.style.display = "block";
 }
 
 async function performCreate(){
@@ -141,3 +96,37 @@ async function performCreate(){
 
     }
 }
+window.performCreate = performCreate;
+
+window.onload = function(){
+    let dataInicio = document.getElementById("fieldDataInicio");
+    dataInicio.min = dataDeHoje();
+    let dataFim = document.getElementById("fieldDataFim");
+    let dataEvento = document.getElementById("fieldDataEvento");
+    
+    function checkDataInicio(){
+        if(dataInicio.value.length == 0 || toDate(dataInicio.value) > toDate(dataFim.value)){
+            dataFim.disabled = 'disabled';
+            dataFim.value = null;
+        }else{
+            dataFim.disabled = false;
+        }
+    }
+    function checkDataFim(){
+        if(dataFim.value.length == 0 || dataFim.value.length == undefined){
+            dataEvento.disabled = 'disabled';
+        }else if(toDate(dataFim.value) > toDate(dataEvento.value)){
+            dataEvento.value = null;
+            dataEvento.value.length = undefined;
+        }
+        else{
+            dataEvento.disabled = false;
+        }
+    }
+
+    checkDataInicio();
+    checkDataFim();
+
+    dataInicio.addEventListener("input", checkDataInicio);
+    dataFim.addEventListener("input", checkDataFim);
+};
