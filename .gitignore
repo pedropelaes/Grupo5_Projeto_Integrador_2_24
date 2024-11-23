@@ -3,3 +3,4 @@ build/
 package-lock.json
 history.log
 .env
+testee.html
