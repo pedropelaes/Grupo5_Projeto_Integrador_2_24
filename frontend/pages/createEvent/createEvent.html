@@ -9,13 +9,64 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="shortcut icon" type="imagex/png" href="/frontend/res/images/icone_japabet.ico">
     <link rel="stylesheet" href="/frontend/res/styles/createEvent.css">
+    <link rel="stylesheet"
+     href="https://use.fontawesome.com/releases/v6.1.0/css/all.css" 
+     crossorigin="anonymous">
     <script type="module" src="createEvent.js"></script>
 </head>
 
 <body class=" colorbg d-flex justify-content-center align-items-center vh-100">
+    <nav class="navbar fixed-top navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/frontend/pages/home/home.html">
+                <img src="/frontend/res/images/icone_japabet.ico" alt="Logo Japabet" width="80" height="64">
+            </a>
+            <a class="navbar-brand" href="/frontend/pages/home/home.html">JAPABET</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <!--<li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="#">Eventos</a>
+                    </li>-->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Seu perfil
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/frontend/pages/wallet/wallet.html" >Minha carteira</a></li>
+                            <li><a class="dropdown-item" href="/frontend/pages/myEvents/myEvents.html">Meus eventos</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" onclick="signOut()">Sair</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search">
+                    <div class="input-group" style="position: relative;;">
+                        <input class="form-control" type="search" placeholder="Buscar eventos" aria-label="Search" id="fieldBusca">
+                        <button class="btn btn-danger" type="button" onclick="searchEventbyButton()" id="botaoBusca" >
+                        <i class="fas fa-search"></i> Buscar</button>
+                    </div>
+                </form>
+                <!--<div>
+                    <button class="btn btn-primary" type="button" onclick="switchWindow('/frontend/pages/createEvent/createEvent.html')">
+                        <i class="fas fa-plus"></i> Criar evento</button>
+                </div>-->
+            </div>
+        </div>
+    </nav>
+    
     <div class="maineee shadow p-4 bg-white  ">
         <img src="/frontend/res/images/japabet_logo.png" class="ml-3" height="500" width="500" alt="">
-
         <main class="w-100 m-auto form-container ">
             <form>
                 <h1 class="h3 text-center">
@@ -63,6 +114,7 @@
         crossorigin="anonymous"></script>
     <script src="/frontend/pages/IP.js"></script>
     <script type="module" src="createEvent.js"></script>
+    <script type="module" src="/frontend/pages/signOut.js"></script>
 </body>
 
 </html>

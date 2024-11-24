@@ -10,7 +10,7 @@
     <link rel="shortcut icon" type="imagex/png" href="/frontend/res/images/icone_japabet.ico">
     <link rel="stylesheet" href="/frontend/res/styles/home.css">
     <link rel="stylesheet"
-     href="https://use.fontawesome.com/releases/v5.12.1/css/all.css" 
+     href="https://use.fontawesome.com/releases/v6.1.0/css/all.css" 
      crossorigin="anonymous">
     <script type="module" src="home.js"></script>
 </head>
@@ -43,10 +43,10 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/frontend/pages/wallet/wallet.html" >Minha carteira</a></li>
                             <li><a class="dropdown-item" href="/frontend/pages/myEvents/myEvents.html">Meus eventos</a></li>
-                            <!--<li>
+                            <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="#">Sair</a></li>-->
+                            <li><a class="dropdown-item" onclick="signOut()">Sair</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -125,6 +125,7 @@
         crossorigin="anonymous"></script>
     <script type="module" src="home.js"></script>
     <script src="/frontend/pages/IP.js"></script>
+    <script type="module" src="/frontend/pages/signOut.js"></script>
 </body>
 
 </html>

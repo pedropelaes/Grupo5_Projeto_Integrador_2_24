@@ -1,6 +1,19 @@
 import { switchWindow } from "/frontend/pages/home/home.js";
+import { botaoSearch } from "../searchEvent/searchEvent.js";
 import { showErrorMessage } from "/frontend/pages/login/login.js";
 window.switchWindow = switchWindow;
+
+export function showLoginButton(){
+    var divMb = document.getElementById("messageBox");
+    const loginButton = document.createElement("button");
+    loginButton.id = ("botaoLogin");
+    loginButton.classList.add("btn", "btn-outline-success")
+    loginButton.onclick = () => {switchWindow('/frontend/pages/login/login.html');};
+    loginButton.innerHTML = `
+    <i class="fas fa-arrow-right"></i> Login`
+
+    divMb.appendChild(loginButton);
+}
 
 async function PerformWalletInfo(){
     const response = await fetch(
@@ -46,10 +59,13 @@ async function PerformWalletInfo(){
         
     }else{
         showErrorMessage("Faça login para visualizar sua carteira.");
+        showLoginButton();
     }
 }
 window.onload = function(){
     if(window.location.pathname.includes("wallet.html")){
         PerformWalletInfo();
+
+        botaoSearch();
     }
 }

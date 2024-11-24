@@ -1,0 +1,13 @@
+#messageBox {
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 100px; 
+    width: 100%; 
+    text-align: center;
+}
+#botaoLogin {
+    width: 200px; 
+    height: 60px;
+    font-size: 18px; 
+}

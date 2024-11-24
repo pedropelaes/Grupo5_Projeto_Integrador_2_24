@@ -33,6 +33,7 @@ routes.post('/finishEvent', EventsManager.finishEventHandler);
 routes.post('/searchEvent', EventsManager.searchEventHandler);
 routes.post('/wallet', FinancialManager.walletHandler);
 routes.post('/home', EventsManager.showEventsHandler);
+routes.post('/signOut', AccountsManager.signOutHandler);
 
 
 app.listen(port, ()=>{

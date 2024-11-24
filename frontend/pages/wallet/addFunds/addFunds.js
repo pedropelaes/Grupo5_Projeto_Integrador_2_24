@@ -1,5 +1,6 @@
 import { switchWindow } from "/frontend/pages/home/home.js";
 import { showErrorMessage, cleanError, showMessage } from "/frontend/pages/login/login.js";
+import { showLoginButton } from "/frontend/pages/wallet/wallet.js" 
 
 function isValid(cartao, nome, validade, cvv, valor){
     var valid = false;
@@ -62,6 +63,7 @@ async function performAddFunds() {
             if(await response.status == 401){
                 message = message + " É necessário fazer login para depositar."
                 showErrorMessage(message);
+                showLoginButton();
             }else{
                 showErrorMessage(message);
             }

@@ -1,5 +1,6 @@
 import { switchWindow } from "/frontend/pages/home/home.js";
 import { showErrorMessage, cleanError, showMessage } from "/frontend/pages//login/login.js";
+import { showLoginButton } from "/frontend/pages/wallet/wallet.js" 
 
 function toggleInputField() {
     const method = document.querySelector('input[name="metodoSaque"]:checked').value;
@@ -87,6 +88,7 @@ async function performWithdrawFunds(){
             if(await response.status == 401){
                 message = message + " É necessário fazer login para sacar."
                 showErrorMessage(message);
+                showLoginButton();
             }else{
                 showErrorMessage(message);
             }

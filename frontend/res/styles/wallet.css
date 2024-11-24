@@ -1,5 +1,13 @@
+body {
+    padding-top: 70px;
+    
+}
+.navbar {
+    z-index: 1030; /* Bootstrap padrão */
+}
 .container{
     border-radius: 20px;
+    position: relative;
 }
 .colorbg{
     background-color:#a20404;
@@ -9,6 +17,14 @@
     font-family:Verdana, Geneva, Tahoma, sans-serif;
     font-size: 20px;
 
+}
+#messageBox {
+    display: flex; /* Ativa o Flexbox */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    height: 100px; /* Ajuste o valor conforme necessário */
+    width: 100%; /* Garante que ocupe todo o espaço disponível */
+    text-align: center; /* Para centralizar conteúdo baseado em texto */
 }
 .main-container {
     display: flex; 

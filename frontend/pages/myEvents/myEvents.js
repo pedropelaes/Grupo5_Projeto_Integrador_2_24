@@ -1,5 +1,6 @@
 import { switchWindow, bet, searchEventbyButton } from "../home/home.js";
 import { showErrorMessage } from "../login/login.js";
+import { showLoginButton } from "../wallet/wallet.js";
 window.switchWindow = switchWindow;
 window.bet = bet;
 window.searchEventbyButton = searchEventbyButton;
@@ -45,6 +46,7 @@ async function PerformMyEvents(){
 
     }else{
         showErrorMessage(await response.status + " - " + await response.text());
+        showLoginButton();
     }
     
 }

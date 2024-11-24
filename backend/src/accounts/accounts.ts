@@ -3,6 +3,8 @@ import OracleDB from "oracledb";
 import dotenv from 'dotenv';
 dotenv.config();
 import conexao from "../connection";
+import { log } from "console";
+import { sign } from "crypto";
 
 /*
     Nampespace que contém tudo sobre "contas de usuários"
@@ -173,8 +175,46 @@ export namespace AccountsManager {
         }
     }
 
+    async function signOut(): Promise <any>{
+        const connection= await conexao();
+        
+        let findUserLogged = await connection.execute(
+            `SELECT EMAIL
+             FROM USUARIO
+             WHERE TOKEN_SESSAO = :token_atual`,
+            {token_atual: last_token}
+        )
+        console.log(`Usuario logado: ${findUserLogged.rows}`)
+        if(findUserLogged && findUserLogged.rows && findUserLogged.rows.length > 0){
+            
+            let logOff = await connection.execute(
+                `UPDATE USUARIO
+                SET TOKEN_SESSAO = 'SIGNOUT'
+                WHERE EMAIL = :email`,
+                {email: (findUserLogged.rows as any)[0][0]}
+            )
+            connection.commit();
+            last_token = null;
+            console.log(`SignOut: ${findUserLogged.rows}`, logOff);
+            return (findUserLogged.rows as any)[0][0];
+        }else{
+            return null;
+        }
+    }
+
+    export const signOutHandler: RequestHandler = async (req:Request, res:Response)=>{
+        const logOff = await signOut();
+        if(logOff !== null){
+            res.statusCode = 200;
+            res.send(`LogOut ${logOff}.`);
+        }else{
+            res.statusCode = 401;
+            res.send("Nenhum usuário logado");
+        }
+    }
+
     export async function loginADM(email:string, senha:string) {
-        const connection= await conexao()
+        const connection= await conexao();
 
         let accountsRows = await connection.execute(
             'SELECT * FROM MODERADOR WHERE EMAIL = :email AND SENHA = :senha',

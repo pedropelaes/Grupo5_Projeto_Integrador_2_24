@@ -103,24 +103,26 @@ function showModalVerMais(evento){
 
 
 }
+export function botaoSearch(){
+    let campoBusca = document.getElementById("fieldBusca");
+    let botaoBusca = document.getElementById("botaoBusca");
+    
+    function checkBuscar(){
+        if(campoBusca.value.trim().length == 0){
+            botaoBusca.disabled = true;
+        }else{
+            botaoBusca.disabled = false;
+        }
+    }
 
+    checkBuscar();
+
+    campoBusca.addEventListener("input", checkBuscar);
+}
 window.onload = function(){
     if(window.location.pathname.includes("searchEvent.html")){
         performSearch();
         
-        let campoBusca = document.getElementById("fieldBusca");
-        let botaoBusca = document.getElementById("botaoBusca");
-        
-        function checkBuscar(){
-            if(campoBusca.value.trim().length == 0){
-                botaoBusca.disabled = true;
-            }else{
-                botaoBusca.disabled = false;
-            }
-        }
-
-        checkBuscar();
-
-        campoBusca.addEventListener("input", checkBuscar);
-}
+        botaoSearch();
+    }
 }

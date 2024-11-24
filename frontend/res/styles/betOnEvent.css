@@ -23,3 +23,15 @@
     margin-left: 75px;
     height: 500px;
 }
+#messageBox {
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 100px; 
+    width: 100%; 
+    text-align: center;
+}
+
+#botaoLogin {
+    width: 700px;
+}

@@ -1,3 +1,4 @@
+import { botaoSearch } from "../searchEvent/searchEvent.js";
 export function switchWindow(caminho){
     window.location.href = caminho;
 }
@@ -138,19 +139,6 @@ window.onload = function(){
     if(window.location.pathname.includes("home")){
         PerformShowEvents();
         
-        let campoBusca = document.getElementById("fieldBusca");
-        let botaoBusca = document.getElementById("botaoBusca");
-        
-        function checkBuscar(){
-            if(campoBusca.value.trim().length == 0){
-                botaoBusca.disabled = true;
-            }else{
-                botaoBusca.disabled = false;
-            }
-        }
-
-        checkBuscar();
-
-        campoBusca.addEventListener("input", checkBuscar);
+        botaoSearch();
     }
 }

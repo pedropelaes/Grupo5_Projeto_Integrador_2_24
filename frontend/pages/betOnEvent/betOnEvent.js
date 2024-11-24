@@ -1,6 +1,7 @@
 import { switchWindow } from "../home/home.js";
 import { showErrorMessage, cleanError, showMessage } from "../login/login.js";
-
+import { botaoSearch } from "../searchEvent/searchEvent.js";
+import { showLoginButton } from "../wallet/wallet.js";
 window.titulo = sessionStorage.getItem("titulo");
 
 function isValid(titulo, qtdCotas, opcao){
@@ -57,6 +58,7 @@ async function performBetOnEvent(){
             let message = (await response.status) + " - " + (await response.text());
             if(await response.status == 401){
                 showErrorMessage(message+" É necessário estar logado para apostar.");
+                showLoginButton();
             }else{
                 showErrorMessage(message);
             }
@@ -67,5 +69,8 @@ async function performBetOnEvent(){
 window.performBetOnEvent = performBetOnEvent;
 
 window.onload = function(){
-    document.getElementById("fieldTitulo").value = window.titulo;
+    if(window.location.pathname.includes("betOnEvent.html")){
+        document.getElementById("fieldTitulo").value = window.titulo;
+        botaoSearch();
+    }
 }

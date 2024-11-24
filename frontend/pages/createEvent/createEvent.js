@@ -1,5 +1,7 @@
 import { switchWindow } from "../home/home.js";
 import { showErrorMessage, cleanError, showMessage } from "../login/login.js";
+import { botaoSearch } from "../searchEvent/searchEvent.js";
+import { showLoginButton } from "../wallet/wallet.js";
 
 function dataDeHoje(){
     const data = new Date();
@@ -89,6 +91,7 @@ async function performCreate(){
             if(await response.status == 401){
                 message = message + " É necessário fazer login para criar eventos."
                 showErrorMessage(message);
+                showLoginButton();
             }else{
                 showErrorMessage(message);
             }
@@ -99,34 +102,38 @@ async function performCreate(){
 window.performCreate = performCreate;
 
 window.onload = function(){
-    let dataInicio = document.getElementById("fieldDataInicio");
-    dataInicio.min = dataDeHoje();
-    let dataFim = document.getElementById("fieldDataFim");
-    let dataEvento = document.getElementById("fieldDataEvento");
-    
-    function checkDataInicio(){
-        if(dataInicio.value.length == 0 || toDate(dataInicio.value) > toDate(dataFim.value)){
-            dataFim.disabled = 'disabled';
-            dataFim.value = null;
-        }else{
-            dataFim.disabled = false;
-        }
-    }
-    function checkDataFim(){
-        if(dataFim.value.length == 0 || dataFim.value.length == undefined){
-            dataEvento.disabled = 'disabled';
-        }else if(toDate(dataFim.value) > toDate(dataEvento.value)){
-            dataEvento.value = null;
-            dataEvento.value.length = undefined;
-        }
-        else{
-            dataEvento.disabled = false;
-        }
-    }
+    if(window.location.pathname.includes("createEvent.html")){
+        botaoSearch();
 
-    checkDataInicio();
-    checkDataFim();
+        let dataInicio = document.getElementById("fieldDataInicio");
+        dataInicio.min = dataDeHoje();
+        let dataFim = document.getElementById("fieldDataFim");
+        let dataEvento = document.getElementById("fieldDataEvento");
+        
+        function checkDataInicio(){
+            if(dataInicio.value.length == 0 || toDate(dataInicio.value) > toDate(dataFim.value)){
+                dataFim.disabled = 'disabled';
+                dataFim.value = null;
+            }else{
+                dataFim.disabled = false;
+            }
+        }
+        function checkDataFim(){
+            if(dataFim.value.length == 0 || dataFim.value.length == undefined){
+                dataEvento.disabled = 'disabled';
+            }else if(toDate(dataFim.value) > toDate(dataEvento.value)){
+                dataEvento.value = null;
+                dataEvento.value.length = undefined;
+            }
+            else{
+                dataEvento.disabled = false;
+            }
+        }
 
-    dataInicio.addEventListener("input", checkDataInicio);
-    dataFim.addEventListener("input", checkDataFim);
+        checkDataInicio();
+        checkDataFim();
+
+        dataInicio.addEventListener("input", checkDataInicio);
+        dataFim.addEventListener("input", checkDataFim);
+    }
 };

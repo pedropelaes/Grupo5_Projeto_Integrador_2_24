@@ -9,6 +9,9 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="shortcut icon" type="imagex/png" href="/frontend/res/images/icone_japabet.ico">
     <link rel="stylesheet" href="/frontend/res/styles/betOnEvent.css">
+    <link rel="stylesheet"
+     href="https://use.fontawesome.com/releases/v6.1.0/css/all.css" 
+     crossorigin="anonymous">
     <script type="module" src="betOnEvent.js"></script>
 </head>
 
@@ -16,10 +19,10 @@
     
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="/frontend/pages/home/home.html">
                 <img src="/frontend/res/images/icone_japabet.ico" alt="Logo Japabet" width="80" height="64">
             </a>
-            <a class="navbar-brand" href="#">JAPABET</a>
+            <a class="navbar-brand" href="/frontend/pages/home/home.html">JAPABET</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -35,6 +38,10 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/frontend/pages/wallet/wallet.html">Minha carteira</a></li>
                             <li><a class="dropdown-item" href="/frontend/pages/myEvents/myEvents.html">Meus eventos</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" onclick="signOut()">Sair</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -99,6 +106,7 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script type="module" src="betOnEvent.js"></script>
     <script src="/frontend/pages/IP.js"></script>
+    <script type="module" src="/frontend/pages/signOut.js"></script>
 </body>
 
 </html>
