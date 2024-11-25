@@ -1,6 +1,10 @@
 import { switchWindow } from "../home/home.js";
 import { showErrorMessage, cleanError, showMessage } from "../login/login.js";
 
+function validarString(str) {
+    return str.includes('@') && str.includes('.');
+}
+
 function dataMinima(){
     const data = new Date();
     const d = String(data.getFullYear() - 18) + "-" + String(data.getMonth()+1).padStart(2, '0') + "-" + String(data.getDate()).padStart(2, '0');
@@ -14,8 +18,11 @@ document.getElementById("dataNascimento").max = dataMinima();
 
 function isValid(name, email, password, date ){
     var valid = false;
-    if(email.length > 0 && password.length >= 6 && name.length > 0 && date.length > 0){
+    if(email.length > 0 && password.length >= 6 && name.length > 0 && date.length > 0 && validarString(email)){
         valid = true
+    }
+    else if (validarString(email) == false){
+        showErrorMessage("Email invalido, deve te @ e . no seu email ");
     }
     else if(email.length == 0 && password.length == 0 && name.length == 0 && date.length == 0){
         showErrorMessage("Por favor, preencha todos os campos.");
