@@ -21,8 +21,8 @@ export namespace FinancialManager{
     export async function addTransferHistory(tipo: string, id_wallet: number, valor: number,){
         const connection = await conexao();
 
-        let atualizarHistorico = await connection.execute(
-            `INSERT INTO HISTORICO_TRANSACAO(ID_TRANSACAO, FK_ID_WALLET, TIPO_TRANSACAO, DATA_TRANSACAO, HORA_TRANSACAO, VALOR)
+        let atualizarTransacao = await connection.execute(
+            `INSERT INTO TRANSACAO(ID_TRANSACAO, FK_ID_WALLET, TIPO_TRANSACAO, DATA_TRANSACAO, HORA_TRANSACAO, VALOR)
                 VALUES(SEQ_HIST_TRANSACAO.NEXTVAL, :id_wallet, :tipo, SYSDATE, SYSTIMESTAMP, :valor)`,
             {
                 id_wallet: id_wallet,
@@ -132,7 +132,7 @@ export namespace FinancialManager{
 
         let checarTotalSaqueDia = await connection.execute(
             `SELECT SUM(VALOR)
-             FROM HISTORICO_TRANSACAO
+             FROM TRANSACAO
              WHERE FK_ID_WALLET = :id_wallet 
              AND TRUNC(DATA_TRANSACAO) = TRUNC(SYSDATE)
              AND TIPO_TRANSACAO = 'SAQUE'`,
@@ -253,7 +253,7 @@ export namespace FinancialManager{
             const getFinancialInfo = await connection.execute(
                 `SELECT TO_CHAR(w.SALDO, '9999999990.00'), ht.ID_TRANSACAO, ht.TIPO_TRANSACAO, TO_CHAR(ht.DATA_TRANSACAO, 'DD-MM-YYYY'), TO_CHAR(ht.HORA_TRANSACAO, 'HH24:MI:SS'), ht.VALOR
                 FROM WALLET w
-                        JOIN HISTORICO_TRANSACAO ht ON w.ID_WALLET = ht.FK_ID_WALLET
+                        JOIN TRANSACAO ht ON w.ID_WALLET = ht.FK_ID_WALLET
                 WHERE w.ID_WALLET = :id_wallet
                 ORDER BY ht.DATA_TRANSACAO DESC, ht.HORA_TRANSACAO DESC`,
                 
@@ -262,15 +262,15 @@ export namespace FinancialManager{
             //0-saldo 1-id_Transacao 2-tipo 3-data 4-hora 5-valor
 
             const getBetsInfo = await connection.execute(
-                `SELECT TO_CHAR(ha.DATA_APOSTA, 'DD-MM-YYYY'), TO_CHAR(ha.HORA_APOSTA, 'HH24:MI:SS'), e.TITULO, ha.VALOR, 
+                `SELECT TO_CHAR(a.DATA_APOSTA, 'DD-MM-YYYY'), TO_CHAR(ha.HORA_APOSTA, 'HH24:MI:SS'), e.TITULO, a.VALOR, 
                  CASE 
-                    WHEN ha.OPCAO_APOSTA = 1 THEN 'Sim'
-                    WHEN ha.OPCAO_APOSTA = 0 THEN 'Não'
+                    WHEN a.OPCAO_APOSTA = 1 THEN 'Sim'
+                    WHEN a.OPCAO_APOSTA = 0 THEN 'Não'
                  END AS OPCAO_APOSTA
-                 FROM HISTORICO_APOSTAS ha
-                    JOIN EVENTOS e ON ha.FK_ID_EVENTO = e.ID_EVENTO
-                 WHERE ha.FK_ID_USUARIO = :id_user
-                 ORDER BY ha.DATA_APOSTA DESC, ha.HORA_APOSTA DESC`,
+                 FROM APOSTA a
+                    JOIN EVENTOS e ON a.FK_ID_EVENTO = e.ID_EVENTO
+                 WHERE a.FK_ID_USUARIO = :id_user
+                 ORDER BY a.DATA_APOSTA DESC, a.HORA_APOSTA DESC`,
                 {id_user: user_id}
             )
             //0-data 1-hora 2-titulo 3-valor 4-escolha

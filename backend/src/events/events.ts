@@ -488,7 +488,7 @@ export namespace EventsManager {
                 const id_evento = (getEventId.rows as any)[0][0];
 
                 let saveBet= await connection.execute(
-                    `INSERT INTO HISTORICO_APOSTAS(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
+                    `INSERT INTO APOSTA(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
                         VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_usuario, :id_evento, :id_carteira, SYSTIMESTAMP, SYSDATE, :cotas, :valor, :opcao)`,
                     {
                         id_evento: id_evento,
@@ -615,7 +615,7 @@ export namespace EventsManager {
         console.log(`Evento finalizado. Id_evento: ${id_evento}`, finalizarEvento);
 
         let apostasSim = await connection.execute(
-            `SELECT SUM(COTAS), SUM(VALOR) FROM HISTORICO_APOSTAS
+            `SELECT SUM(COTAS), SUM(VALOR) FROM APOSTA
              WHERE OPCAO_APOSTA = 1 AND FK_ID_EVENTO = :id_evento`,
             {id_evento: id_evento}
         )
@@ -623,7 +623,7 @@ export namespace EventsManager {
         const valorSim = (apostasSim.rows as any)[0][1];
 
         let apostasNao = await connection.execute(
-            `SELECT SUM(COTAS), SUM(VALOR) FROM HISTORICO_APOSTAS
+            `SELECT SUM(COTAS), SUM(VALOR) FROM APOSTA
              WHERE OPCAO_APOSTA = 0 AND FK_ID_EVENTO = :id_evento`,
             {id_evento: id_evento}
         )
@@ -634,7 +634,7 @@ export namespace EventsManager {
 
         let apostasVencedoras = await connection.execute(
             `SELECT ID_APOSTA, FK_ID_USUARIO, FK_ID_WALLET, COTAS, VALOR
-             FROM HISTORICO_APOSTAS
+             FROM APOSTA
              WHERE OPCAO_APOSTA = :resultado_aposta AND FK_ID_EVENTO = :id_evento`,
              {
                 resultado_aposta: resultado_aposta,
@@ -710,9 +710,9 @@ export namespace EventsManager {
             `SELECT TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, VALORCOTA
             FROM (
                 SELECT e.TITULO, e.DESCRICAO, TO_CHAR(e.DATA_INICIO, 'DD/MM/YYYY') AS DATA_INICIO, TO_CHAR(e.DATA_FIM, 'DD/MM/YYYY') AS DATA_FIM, TO_CHAR(e.DATA_EVENTO, 'DD/MM/YYYY') AS DATA_EVENTO, e.VALORCOTA,
-                    ROW_NUMBER() OVER (ORDER BY COUNT(ha.FK_ID_EVENTO) DESC) AS RNUM
-                FROM HISTORICO_APOSTAS ha
-                JOIN EVENTOS e ON ha.FK_ID_EVENTO = e.ID_EVENTO
+                    ROW_NUMBER() OVER (ORDER BY COUNT(a.FK_ID_EVENTO) DESC) AS RNUM
+                FROM APOSTA a
+                JOIN EVENTOS e ON a.FK_ID_EVENTO = e.ID_EVENTO
                 WHERE e.STATUS = 'APROVADO'
                 GROUP BY e.TITULO, e.DESCRICAO, e.DATA_INICIO, e.DATA_FIM, e.DATA_EVENTO, e.VALORCOTA
             ) subquery
