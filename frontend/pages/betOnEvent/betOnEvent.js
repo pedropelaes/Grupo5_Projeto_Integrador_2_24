@@ -41,7 +41,7 @@ async function performBetOnEvent(){
         reqHeaders.append("escolha", opcao);
 
         const response = await fetch (
-            "http://192.168.0.10:3000/betOnEvent",{
+            window.IP +"/betOnEvent",{
                 method: "POST",
                 headers: reqHeaders
             }
