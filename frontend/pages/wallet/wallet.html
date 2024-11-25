@@ -56,14 +56,14 @@
                     </div>
                 
                 <form class="d-flex" role="search">
-                    <div class="input-group" style="position: relative;;">
+                    <div class="input-group" style="position: relative;" id="searchField">
                         <input class="form-control" type="search" placeholder="Buscar eventos" aria-label="Search" id="fieldBusca">
                         <button class="btn btn-danger" type="button" onclick="searchEventbyButton()" id="botaoBusca" >
                         <i class="fas fa-search"></i> Buscar</button>
                     </div>
                 </form>
                 <div>
-                    <button class="btn btn-primary" type="button" onclick="switchWindow('/frontend/pages/createEvent/createEvent.html')">
+                    <button class="btn btn-primary" type="button" id="botaoCriar" onclick="switchWindow('/frontend/pages/createEvent/createEvent.html')">
                         <i class="fas fa-plus"></i> Criar evento</button>
                 </div>
             </div>

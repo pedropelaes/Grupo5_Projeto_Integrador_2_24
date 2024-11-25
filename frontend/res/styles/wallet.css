@@ -35,3 +35,15 @@ body {
     align-items: center; 
 }
 
+#botaoCriar{
+    width: 135px;
+}
+
+#searchField{
+    width: 100%;
+    margin-right: 5px;
+}
+
+#fieldBusca{
+    width: 40%;
+}
