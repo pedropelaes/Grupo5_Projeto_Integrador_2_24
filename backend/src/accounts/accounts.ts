@@ -41,7 +41,7 @@ export namespace AccountsManager {
     
         const dataNascimento = new Date(user.data_nasc); 
     
-        if (dataNascimento > dataMinima) {
+        if (dataNascimento < dataMinima) {
             return false; 
         }
         return true;
