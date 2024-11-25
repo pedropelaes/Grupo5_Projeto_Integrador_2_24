@@ -23,3 +23,16 @@
     margin-left: 75px;
     height: 500px;
 }
+
+#messageBox {
+    display: flex; /* Ativa o Flexbox */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    height: 100px; /* Ajuste o valor conforme necessário */
+    width: 100%; /* Garante que ocupe todo o espaço disponível */
+    text-align: center; /* Para centralizar conteúdo baseado em texto */
+}
+
+#botaoCadastro {
+    width: 500px;
+}

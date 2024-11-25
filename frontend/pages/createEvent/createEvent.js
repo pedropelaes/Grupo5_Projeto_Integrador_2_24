@@ -75,7 +75,7 @@ async function performCreate(){
         reqHeaders.append("cota", valorCota);
 
         const response = await fetch(
-            "http://192.168.0.10:3000/addNewEvent",{
+            window.IP+"/addNewEvent",{
                 method: "POST",
                 headers: reqHeaders
             }

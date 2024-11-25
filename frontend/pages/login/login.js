@@ -38,6 +38,16 @@ export function showMessage(messageContent){
     divMb.style.display = "block";
 }
 
+function showSignUpButton(){
+    var div = document.getElementById("messageBox");
+    const signUpButton = document.createElement("button");
+    signUpButton.id = ("botaoCadastro");
+    signUpButton.classList.add("btn", "btn-outline-danger");
+    signUpButton.onclick = () => {switchWindow('/frontend/pages/signUp/signUp.html')};
+    signUpButton.innerHTML = `<i class="fas fa-user-plus"></i> Cadastrar`;
+    div.appendChild(signUpButton);
+}
+
 async function performLogin(){
     var email = document.getElementById("fieldEmail").value;
     var password = document.getElementById("fieldPassword").value;
@@ -105,7 +115,7 @@ async function performLogin(){
             //mostar o texto de erro...
             let message = (await response.status) + " - " + (await response.text());
             showErrorMessage(message);
-            
+            showSignUpButton();
         }
 
     }
