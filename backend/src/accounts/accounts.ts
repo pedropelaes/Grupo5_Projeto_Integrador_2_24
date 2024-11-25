@@ -35,6 +35,18 @@ export namespace AccountsManager {
         }
     }
 
+    async function checkDate(user: conta_usuario): Promise<boolean> {
+        const dataHoje = new Date();
+        const dataMinima = new Date(dataHoje.getFullYear() - 18, dataHoje.getMonth(), dataHoje.getDate());
+    
+        const dataNascimento = new Date(user.data_nasc); 
+    
+        if (dataNascimento > dataMinima) {
+            return false; 
+        }
+        return true;
+    }
+
     async function salvarconta(ua: conta_usuario){
         const connection= await conexao()
 
@@ -73,9 +85,14 @@ export namespace AccountsManager {
                 data_nasc: pBirthdate
             }
             if(!await checkUser(newAccount)){
-                salvarconta(newAccount);
-                res.statusCode = 200; 
-                res.send(`Nova conta cadastrada.`);
+                if(! await checkDate(newAccount)){
+                    salvarconta(newAccount);
+                    res.statusCode = 200; 
+                    res.send(`Nova conta cadastrada.`);
+                }else{
+                    res.statusCode = 406;
+                    res.send("Permitido para maiores de 18 anos");
+                }
             }else{
                 res.statusCode = 406;
                 res.send("Email já cadastrado.");

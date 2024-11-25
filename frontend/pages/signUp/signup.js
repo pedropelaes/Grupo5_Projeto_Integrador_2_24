@@ -5,6 +5,7 @@ function validarString(str) {
     return str.includes('@') && str.includes('.');
 }
 
+/*
 function dataMinima(){
     const data = new Date();
     const d = String(data.getFullYear() - 18) + "-" + String(data.getMonth()+1).padStart(2, '0') + "-" + String(data.getDate()).padStart(2, '0');
@@ -14,7 +15,7 @@ function dataMinima(){
 window.dataMinima = dataMinima;
 
 document.getElementById("dataNascimento").max = dataMinima();
-
+*/
 
 function isValid(name, email, password, date ){
     var valid = false;
@@ -22,7 +23,7 @@ function isValid(name, email, password, date ){
         valid = true
     }
     else if (validarString(email) == false){
-        showErrorMessage("Email invalido, deve te @ e . no seu email ");
+        showErrorMessage("Email invalido, deve ter '@' e '.' no seu email ");
     }
     else if(email.length == 0 && password.length == 0 && name.length == 0 && date.length == 0){
         showErrorMessage("Por favor, preencha todos os campos.");
