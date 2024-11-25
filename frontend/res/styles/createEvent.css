@@ -1,5 +1,5 @@
 body {
-    padding-top: 56px;
+    padding-top: 250px;
 }
 .container{
     border-radius: 20px;
@@ -23,7 +23,6 @@ body {
 }
 
 .main-container img {
-    margin-left: 75px;
     height: 500px;
 }
 
