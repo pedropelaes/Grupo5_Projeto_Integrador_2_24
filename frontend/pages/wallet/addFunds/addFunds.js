@@ -38,7 +38,6 @@ async function performAddFunds() {
     var valor = document.getElementById("amount").value;
     
     if(isValid(nCartao, nome, validade, cvv, valor)){
-        console.log("a");
         const reqHeaders = new Headers();
         reqHeaders.append("Content-Type", "text/plain");
         reqHeaders.append("numero_do_cartao", nCartao);

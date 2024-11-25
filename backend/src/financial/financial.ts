@@ -83,6 +83,26 @@ export namespace FinancialManager{
         return wallet.saldo as number;
     }
     
+    async function checkValidDate(data_validade: string): Promise<boolean> {
+        const dataHoje = new Date();
+        const mesAtual = dataHoje.getMonth() + 1;
+        const anoAtual = dataHoje.getFullYear();
+    
+        const partes = data_validade.split("-");
+    
+        const ano = parseInt(partes[0], 10);
+        const mes = parseInt(partes[1], 10);
+    
+        console.log("Mês:", mes, "Ano:", ano);
+    
+        if (mes >= 1 && mes <= 12 && ano >= 2000) {
+            if (ano > anoAtual || (ano === anoAtual && mes >= mesAtual)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     export const addFundsHandler: RequestHandler = async (req: Request, res: Response) => {
         const fNumCartao = req.get("numero_do_cartao");
         const fCod = req.get("cvv");
@@ -93,7 +113,12 @@ export namespace FinancialManager{
         const SALDO = fSaldo ? parseInt(fSaldo, 10): undefined;
 
         if (fNumCartao && fCod && fDataValidade && fNomeTitular && SALDO){
-            if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
+            console.log(await checkValidDate(fDataValidade));
+            if(! await checkValidDate(fDataValidade)){
+                res.statusCode = 400;
+                res.send(`Validade do cartão ultrapassada`);
+            }
+            else if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
                 const ID: number = ( await AccountsManager.checkToken(AccountsManager.last_token as string) as unknown as number);
                 const newWallet: wallet = {
                     wallet_id: undefined,
@@ -101,16 +126,19 @@ export namespace FinancialManager{
                     user_id: ID
                 }
                 const id_carteira = await getWalletId(ID);
+
+              
                 
                 if(id_carteira !== null){
                     const saldo = await addFunds(newWallet);
                     res.statusCode = 200;
-                    res.send(`Saldo alterado. Adicionado ${saldo}`)
+                    res.send(`Saldo alterado. Adicionado ${saldo}`);
+                    return;
                 }else{
                     await addWallet(newWallet);
                     const saldo = await addFunds(newWallet);
                     res.statusCode = 200;
-                    res.send(`Carteira criada e saldo alterado. Adicionado ${saldo}`)
+                    res.send(`Carteira criada e saldo alterado. Adicionado ${saldo}`);
                 }
             }else{
                 res.statusCode = 401;
@@ -251,18 +279,18 @@ export namespace FinancialManager{
             console.log(`Wallet id: ${id_carteira} ${typeof id_carteira}`);
 
             const getFinancialInfo = await connection.execute(
-                `SELECT TO_CHAR(w.SALDO, '9999999990.00'), ht.ID_TRANSACAO, ht.TIPO_TRANSACAO, TO_CHAR(ht.DATA_TRANSACAO, 'DD-MM-YYYY'), TO_CHAR(ht.HORA_TRANSACAO, 'HH24:MI:SS'), ht.VALOR
+                `SELECT TO_CHAR(w.SALDO, '9999999990.00'), t.ID_TRANSACAO, t.TIPO_TRANSACAO, TO_CHAR(t.DATA_TRANSACAO, 'DD-MM-YYYY'), TO_CHAR(t.HORA_TRANSACAO, 'HH24:MI:SS'), t.VALOR
                 FROM WALLET w
-                        JOIN TRANSACAO ht ON w.ID_WALLET = ht.FK_ID_WALLET
+                        JOIN TRANSACAO t ON w.ID_WALLET = t.FK_ID_WALLET
                 WHERE w.ID_WALLET = :id_wallet
-                ORDER BY ht.DATA_TRANSACAO DESC, ht.HORA_TRANSACAO DESC`,
+                ORDER BY t.DATA_TRANSACAO DESC, t.HORA_TRANSACAO DESC`,
                 
                 {id_wallet: id_carteira}
             )
             //0-saldo 1-id_Transacao 2-tipo 3-data 4-hora 5-valor
 
             const getBetsInfo = await connection.execute(
-                `SELECT TO_CHAR(a.DATA_APOSTA, 'DD-MM-YYYY'), TO_CHAR(ha.HORA_APOSTA, 'HH24:MI:SS'), e.TITULO, a.VALOR, 
+                `SELECT TO_CHAR(a.DATA_APOSTA, 'DD-MM-YYYY'), TO_CHAR(a.HORA_APOSTA, 'HH24:MI:SS'), e.TITULO, a.VALOR, 
                  CASE 
                     WHEN a.OPCAO_APOSTA = 1 THEN 'Sim'
                     WHEN a.OPCAO_APOSTA = 0 THEN 'Não'

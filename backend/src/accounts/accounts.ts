@@ -91,7 +91,7 @@ export namespace AccountsManager {
                     res.send(`Nova conta cadastrada.`);
                 }else{
                     res.statusCode = 406;
-                    res.send("Permitido para maiores de 18 anos");
+                    res.send("Site permitido para maiores de 18 anos");
                 }
             }else{
                 res.statusCode = 406;
