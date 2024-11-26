@@ -413,6 +413,21 @@ export namespace EventsManager {
     async function betOnEvent(token: string, cotas: number, titulo: string, opcao: string):Promise<boolean>{ 
         if(await getEventStatus(null, titulo) === "APROVADO"){
             const connection = await conexao();
+
+            const validEventDate = await connection.execute(
+                `SELECT ID_EVENTO
+                    FROM EVENTO
+                    WHERE TITULO = :titulo
+                        AND data_inicio <= TRUNC(SYSDATE)`,
+                 {
+                    titulo:titulo
+                 }
+            )
+            if(validEventDate && validEventDate.rows && validEventDate.rows.length == 0){
+                console.log("Período de apostas ainda não iniciado");
+                return false;
+            }
+
             const getUserId = await connection.execute(
                 `SELECT ID_USUARIO FROM USUARIO WHERE TOKEN_SESSAO = :token`,
                 {token: token}
@@ -529,7 +544,7 @@ export namespace EventsManager {
                     res.send(`Aposta realizada. Cotas:${qtd_cotas}.`);
                 }else{
                     res.statusCode = 403;
-                    res.send(`Erro ao realizar aposta. Aposta não aprovada ou usuario sem saldo ou carteira.`);
+                    res.send(`Erro ao realizar aposta. Aposta não aprovada, usuario sem saldo ou carteira ou período de apostas ainda não iniciado.`);
                 }
             }else{
                 res.statusCode = 401;
