@@ -1,7 +1,7 @@
 import { switchWindow } from "../home/home.js";
 import { showErrorMessage, cleanError, showMessage } from "../login/login.js";
 import { botaoSearch } from "../searchEvent/searchEvent.js";
-import { showLoginButton } from "../wallet/wallet.js";
+import { checkLoginButton } from "../betOnEvent/betOnEvent.js";
 
 function dataDeHoje(){
     const data = new Date();
@@ -91,7 +91,7 @@ async function performCreate(){
             if(await response.status == 401){
                 message = message + " É necessário fazer login para criar eventos."
                 showErrorMessage(message);
-                showLoginButton();
+                checkLoginButton();
             }else{
                 showErrorMessage(message);
             }

@@ -115,9 +115,13 @@ async function performLogin(){
             //mostar o texto de erro...
             let message = (await response.status) + " - " + (await response.text());
             showErrorMessage(message);
-            showSignUpButton();
         }
 
     }
 }
 window.performLogin = performLogin;
+window.onload = function() {
+    if(window.location.pathname.includes("login.html")){
+        showSignUpButton();
+    }
+}
