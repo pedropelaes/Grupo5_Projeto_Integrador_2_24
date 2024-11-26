@@ -53,10 +53,9 @@ async function performBetOnEvent(){
                 headers: reqHeaders
             }
         )
-        if (response.status == 200){
+        if (response.ok){
             cleanError();
             let message = (await response.status) + " - " + "Aposta realizada.";
-            //showMessage(message);
             alert(message)
             switchWindow("/frontend/pages/home/home.html");
             titulo = null;

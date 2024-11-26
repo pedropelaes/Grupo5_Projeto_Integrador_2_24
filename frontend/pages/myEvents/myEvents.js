@@ -20,28 +20,31 @@ async function PerformMyEvents(){
         const events = await response.json();
         console.log(events["Resultado da busca"]);
         const divEvents = document.getElementById("meusEventos");
+        if(events["Resultado da busca"] == null){
+            showErrorMessage("Você não possui eventos criados ou aprovados");
+        }else{
+            for(let i = 0; i<events["Resultado da busca"].length; i++){
+                let event = document.createElement("div");
+                event.classList.add("card", "mx-2", "mb-3");
+                event.style.width = "18rem";
 
-        for(let i = 0; i<events["Resultado da busca"].length; i++){
-            let event = document.createElement("div");
-            event.classList.add("card", "mx-2", "mb-3");
-            event.style.width = "18rem";
-
-            event.innerHTML=`<img src="/frontend/res/images/icone_japabet.ico" class="card-img-top" alt="Evento">
-                    <div class="card-body">
-                        <h5 class="card-title">${events["Resultado da busca"][i]["TITULO"]}</h5>
-                        <p class="card-text">${events["Resultado da busca"][i]["DESCRICAO"]}</p>
-                        <a href="#" class="btn btn-danger" type="button" onclick="bet('${(events["Resultado da busca"][i]["TITULO"])}')"><i class="fas fa-coins"></i> Apostar</a>
-                        <a href="#" class="btn btn-vermais"><i class="fas fa-search"></i> Ver mais</a>
-                </div>`;
-            let eventoVerMais = event.querySelector(".btn-vermais");
-    
+                event.innerHTML=`<img src="/frontend/res/images/icone_japabet.ico" class="card-img-top" alt="Evento">
+                        <div class="card-body">
+                            <h5 class="card-title">${events["Resultado da busca"][i]["TITULO"]}</h5>
+                            <p class="card-text">${events["Resultado da busca"][i]["DESCRICAO"]}</p>
+                            <a href="#" class="btn btn-danger" type="button" onclick="bet('${(events["Resultado da busca"][i]["TITULO"])}')"><i class="fas fa-coins"></i> Apostar</a>
+                            <a href="#" class="btn btn-vermais"><i class="fas fa-search"></i> Ver mais</a>
+                    </div>`;
+                let eventoVerMais = event.querySelector(".btn-vermais");
         
-            const modalFunction = function(){
-                showModalVerMais(events["Resultado da busca"][i]);
+            
+                const modalFunction = function(){
+                    showModalVerMais(events["Resultado da busca"][i]);
+                }
+        
+                eventoVerMais.addEventListener("click", modalFunction);
+                divEvents.appendChild(event);
             }
-    
-            eventoVerMais.addEventListener("click", modalFunction);
-            divEvents.appendChild(event);
         }
 
     }else{

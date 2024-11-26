@@ -66,7 +66,7 @@ export namespace EventsManager {
             if(titulo === null){
                 let statusEvento = await connection.execute(
                     `SELECT STATUS
-                    FROM EVENTOS
+                    FROM EVENTO
                     WHERE ID_EVENTO = :id_evento`,
                     {id_evento: id_evento}
                 )
@@ -79,7 +79,7 @@ export namespace EventsManager {
                 titulo = titulo.toUpperCase();
                 let statusEvento = await connection.execute(
                     `SELECT STATUS
-                    FROM EVENTOS
+                    FROM EVENTO
                     WHERE TITULO = :titulo`,
                     {titulo: titulo}
                 )
@@ -97,7 +97,7 @@ export namespace EventsManager {
     event.titulo = event.titulo.toUpperCase();
         let checarTitulo = await connection.execute(
             `SELECT TITULO
-             FROM EVENTOS
+             FROM EVENTO
              WHERE TITULO = :titulo`,
             {
                 titulo: event.titulo
@@ -110,8 +110,8 @@ export namespace EventsManager {
         }
 
         let criareventos = await connection.execute(
-            `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA, ID_CRIADOR) 
-            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'EM ANALISE', :valor_cota, 0, 0, :id_criador)`,
+            `INSERT INTO EVENTO(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA, ID_CRIADOR, ID_MODERADOR) 
+            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'EM ANALISE', :valor_cota, 0, 0, :id_criador, 1)`,
             {
                 titulo: event.titulo,
                 descricao: event.descricao,
@@ -176,7 +176,7 @@ export namespace EventsManager {
         let buscarevento;
         if(req === "status"){
             buscarevento = await connection.execute(
-                `SELECT * FROM EVENTOS WHERE STATUS = :status`,
+                `SELECT * FROM EVENTO WHERE STATUS = :status`,
                 {
                     status: busca,
                 },
@@ -184,7 +184,7 @@ export namespace EventsManager {
             ) 
         }else if(req === "titulo"){
             buscarevento = await connection.execute(
-                `SELECT * FROM EVENTOS WHERE TITULO = :titulo`,
+                `SELECT * FROM EVENTO WHERE TITULO = :titulo`,
                 {
                     titulo: busca,
                 },
@@ -198,7 +198,7 @@ export namespace EventsManager {
             
             buscarevento = await connection.execute(
                 `SELECT TO_CHAR(DATA_EVENTO, 'DD/MM/YYYY') AS DATA_EVENTO, TO_CHAR(DATA_FIM, 'DD/MM/YYYY') AS DATA_FIM, TO_CHAR(DATA_INICIO, 'DD/MM/YYYY') AS DATA_INICIO, DESCRICAO, TITULO, VALORCOTA
-                 FROM EVENTOS 
+                 FROM EVENTO
                  WHERE ID_CRIADOR = :id_user AND STATUS = 'APROVADO'`,
                 {id_user: (getUserId.rows as any)[0][0]},
                 {outFormat: OracleDB.OUT_FORMAT_OBJECT}
@@ -261,7 +261,7 @@ export namespace EventsManager {
         titulo = titulo.toUpperCase();
         let getIdCriador = await connection.execute(
             `SELECT ID_CRIADOR
-             FROM EVENTOS
+             FROM EVENTO
              WHERE TITULO = :titulo`,
             {
                 titulo: titulo
@@ -272,7 +272,7 @@ export namespace EventsManager {
         }
         
         const apagarEvento = await connection.execute(
-            `UPDATE EVENTOS 
+            `UPDATE EVENTO 
                 SET STATUS = 'DELETADO' 
                 WHERE TITULO = :titulo `,
         {
@@ -319,7 +319,7 @@ export namespace EventsManager {
         }
         else if(evaluate === "aprovado"){
             const avaliarEvento = await connection.execute(
-                `UPDATE EVENTOS 
+                `UPDATE EVENTO 
                     SET STATUS = 'APROVADO' 
                     WHERE ID_EVENTO = :id_evento `,
                 {
@@ -332,7 +332,7 @@ export namespace EventsManager {
         }
         else if(evaluate === "reprovado"){
             const avaliarEvento = await connection.execute(
-                `UPDATE EVENTOS 
+                `UPDATE EVENTO 
                     SET STATUS = 'REPROVADO' 
                     WHERE ID_EVENTO = :id_evento `,
                 {
@@ -354,7 +354,7 @@ export namespace EventsManager {
         const connection= await conexao();
         let getCreatorId = await connection.execute(
             `SELECT ID_CRIADOR
-             FROM EVENTOS
+             FROM EVENTO
              WHERE ID_EVENTO = :id_evento`,
             {
                 id_evento: id
@@ -433,12 +433,12 @@ export namespace EventsManager {
             console.log(`Id carteira buscado: ${id_carteira}`);
 
             const getValorCotas = await connection.execute(
-                `SELECT VALORCOTA FROM EVENTOS WHERE TITULO = :titulo`,
+                `SELECT VALORCOTA FROM EVENTO WHERE TITULO = :titulo`,
                 {titulo: titulo}
             )
 
             let updateQtdCotas = await connection.execute(
-                `UPDATE EVENTOS
+                `UPDATE EVENTO
                     SET QUANTIDADECOTAS = QUANTIDADECOTAS + :qtd_cotas
                     WHERE TITULO = :titulo`,
                 {
@@ -452,7 +452,7 @@ export namespace EventsManager {
             console.log(`Valor das cotas: ${valorCotas}`);
             
             let updateTotalValue = await connection.execute(
-                `UPDATE EVENTOS
+                `UPDATE EVENTO
                     SET TOTAL_APOSTA = TOTAL_APOSTA + :valor
                     WHERE TITULO = :titulo`,
                 {
@@ -479,7 +479,7 @@ export namespace EventsManager {
                 
                 let getEventId = await connection.execute(
                     `SELECT ID_EVENTO
-                     FROM EVENTOS
+                     FROM EVENTO
                      WHERE TITULO = :titulo`,
                     {
                         titulo: titulo
@@ -488,11 +488,10 @@ export namespace EventsManager {
                 const id_evento = (getEventId.rows as any)[0][0];
 
                 let saveBet= await connection.execute(
-                    `INSERT INTO APOSTA(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
-                        VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_usuario, :id_evento, :id_carteira, SYSTIMESTAMP, SYSDATE, :cotas, :valor, :opcao)`,
+                    `INSERT INTO APOSTA(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
+                        VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_usuario, :id_evento, SYSTIMESTAMP, SYSDATE, :cotas, :valor, :opcao)`,
                     {
                         id_evento: id_evento,
-                        id_carteira: id_carteira,
                         valor: valorCotas,
                         opcao: opt,
                         id_usuario: id_usuario,
@@ -549,7 +548,7 @@ export namespace EventsManager {
         keyWord = `%${keyWord}%`;
         searchEvent = await connection.execute(
             `SELECT ID_EVENTO, TITULO, DESCRICAO, TO_CHAR(DATA_INICIO, 'DD/MM/YYYY') AS INICIO, TO_CHAR(DATA_FIM, 'DD/MM/YYYY') AS FIM, TO_CHAR(DATA_EVENTO, 'DD/MM/YYYY') AS DATA, STATUS, VALORCOTA, RESULTADO_EVENTO 
-            FROM EVENTOS 
+            FROM EVENTO 
             WHERE (DESCRICAO LIKE UPPER(:keyword) OR TITULO LIKE UPPER(:keyword)) 
             AND STATUS = 'APROVADO' 
             AND SYSDATE < DATA_EVENTO`,
@@ -602,7 +601,7 @@ export namespace EventsManager {
         }
         
         let finalizarEvento = await connection.execute(
-            `UPDATE EVENTOS
+            `UPDATE EVENTO
                 SET STATUS = 'FINALIZADO',
                     RESULTADO_EVENTO = :resultado
                 WHERE ID_EVENTO = :id_evento`,
@@ -633,7 +632,7 @@ export namespace EventsManager {
         console.log(`Valor total de nao: ${valorNao} | Valor total de sim: ${valorSim}`);
 
         let apostasVencedoras = await connection.execute(
-            `SELECT ID_APOSTA, FK_ID_USUARIO, FK_ID_WALLET, COTAS, VALOR
+            `SELECT ID_APOSTA, FK_ID_USUARIO, COTAS, VALOR
              FROM APOSTA
              WHERE OPCAO_APOSTA = :resultado_aposta AND FK_ID_EVENTO = :id_evento`,
              {
@@ -712,7 +711,7 @@ export namespace EventsManager {
                 SELECT e.TITULO, e.DESCRICAO, TO_CHAR(e.DATA_INICIO, 'DD/MM/YYYY') AS DATA_INICIO, TO_CHAR(e.DATA_FIM, 'DD/MM/YYYY') AS DATA_FIM, TO_CHAR(e.DATA_EVENTO, 'DD/MM/YYYY') AS DATA_EVENTO, e.VALORCOTA,
                     ROW_NUMBER() OVER (ORDER BY COUNT(a.FK_ID_EVENTO) DESC) AS RNUM
                 FROM APOSTA a
-                JOIN EVENTOS e ON a.FK_ID_EVENTO = e.ID_EVENTO
+                JOIN EVENTO e ON a.FK_ID_EVENTO = e.ID_EVENTO
                 WHERE e.STATUS = 'APROVADO'
                 GROUP BY e.TITULO, e.DESCRICAO, e.DATA_INICIO, e.DATA_FIM, e.DATA_EVENTO, e.VALORCOTA
             ) subquery
@@ -722,7 +721,7 @@ export namespace EventsManager {
     
         const endDateNear = await connection.execute(
             `SELECT e.TITULO, e.DESCRICAO, TO_CHAR(e.DATA_INICIO, 'DD/MM/YYYY'), TO_CHAR(e.DATA_FIM, 'DD/MM/YYYY'), TO_CHAR(e.DATA_EVENTO, 'DD/MM/YYYY'), e.VALORCOTA   
-            FROM EVENTOS e
+            FROM EVENTO e
             WHERE e.DATA_FIM < SYSDATE + 10 AND e.STATUS = 'APROVADO'
             ORDER BY DATA_FIM
             FETCH FIRST 3 ROWS ONLY`

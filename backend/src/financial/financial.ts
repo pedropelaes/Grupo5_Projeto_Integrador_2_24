@@ -296,7 +296,7 @@ export namespace FinancialManager{
                     WHEN a.OPCAO_APOSTA = 0 THEN 'Não'
                  END AS OPCAO_APOSTA
                  FROM APOSTA a
-                    JOIN EVENTOS e ON a.FK_ID_EVENTO = e.ID_EVENTO
+                    JOIN EVENTO e ON a.FK_ID_EVENTO = e.ID_EVENTO
                  WHERE a.FK_ID_USUARIO = :id_user
                  ORDER BY a.DATA_APOSTA DESC, a.HORA_APOSTA DESC`,
                 {id_user: user_id}
