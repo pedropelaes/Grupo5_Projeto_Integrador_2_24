@@ -9,6 +9,7 @@
     <link rel="shortcut icon" type="imagex/png" href="/frontend/res/images/icone_japabet.ico">
     <link href="/frontend/res/styles/signup.css" rel="stylesheet">
     <link rel="shortcut icon" type="imagex/png" href="/frontend/res/images/icone_japabet.ico">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <script type="module" src="signup.js"></script>
 </head>
 
@@ -31,16 +32,28 @@
                     <label for="fieldEmail">Email</label>
                     <input type="email" id="fieldEmail" name="email" class="form-control" placeholder="Digite o email">
                 </div>
-                <div class="form-group mb-2">
+                <div class="form-group mb-2 position-relative">
                     <label for="fieldPassword">Senha</label>
-                    <input type="password" id="fieldPassword" name="password" class="form-control"
-                        placeholder="Digite a senha">
+                    <div class="input-group">
+                    <input type="password" id="fieldPassword" name="password" class="form-control" placeholder="Digite a senha">
+                    <button type="button" class="btn btn-outline-secondary" 
+                        onclick="togglePasswordVisibility('fieldPassword', this)">
+                        <i class="fa-solid fa-eye"></i>                    
+                    </button>
+                    </div>
                 </div>
-                <div class="form-group mb-2">
+                <div class="form-group mb-2 position-relative">
                     <label for="fieldPassword2">Confirme sua senha</label>
-                    <input type="password" id="fieldPassword2" name="password2" class="form-control"
-                        placeholder="Confirme sua senha">
+                    <div class="input-group">
+                        <input type="password" id="fieldPassword2" name="password2" class="form-control" placeholder="Confirme sua senha">
+                        <button type="button" class="btn btn-outline-secondary" 
+                            onclick="togglePasswordVisibility('fieldPassword2', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
+                
+                
                 <div class="form-group mb-2">
                     <label for="fieldDataNascimento">Data nascimento</label><br>
                     <input type="date" id="dataNascimento">

@@ -5,6 +5,22 @@ function validarString(str) {
     return str.includes('@') && str.includes('.');
 }
 
+function togglePasswordVisibility(fieldId, button) {
+    const passwordField = document.getElementById(fieldId);
+    const icon = button.querySelector('i');
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        icon.classList.remove('fa-solid', 'fa-eye');
+        icon.classList.add('fa-solid', 'fa-eye-slash');
+    } else {
+        passwordField.type = "password";
+        icon.classList.remove('fa-solid', 'fa-eye-slash');
+        icon.classList.add('fa-solid', 'fa-eye');
+    }
+}
+
+
 /*
 function dataMinima(){
     const data = new Date();
@@ -102,3 +118,4 @@ async function performSignUp(){
 }
 window.performSignUp = performSignUp;
 
+window.togglePasswordVisibility = togglePasswordVisibility;
