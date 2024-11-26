@@ -17,10 +17,26 @@ window.dataMinima = dataMinima;
 document.getElementById("dataNascimento").max = dataMinima();
 */
 
-function isValid(name, email, password, date ){
+function senhaIgual(senha1,senha2){
+    var correto;
+    if(senha1 != senha2){
+        correto = false
+    }
+    else{
+correto = true
+}
+return correto;
+}
+
+
+
+function isValid(name, email, password, date,password2 ){
     var valid = false;
-    if(email.length > 0 && password.length >= 6 && name.length > 0 && date.length > 0 && validarString(email)){
+    if(email.length > 0 && password.length >= 6 && name.length > 0 && date.length > 0 && validarString(email) && senhaIgual(password,password2) ){
         valid = true
+    }
+    else if(senhaIgual(password,password2) == false){
+        showErrorMessage("Senhas diferentes, por favor digite senhas iguais.");
     }
     else if (validarString(email) == false){
         showErrorMessage("Email inválido.");
@@ -54,11 +70,11 @@ async function performSignUp(){
     var email = document.getElementById("fieldEmail").value;
     var password = document.getElementById("fieldPassword").value;
     var date = document.getElementById("dataNascimento").value;
-
+    var password2 = document.getElementById("fieldPassword2").value;
     email = email.trim();
     password = password.trim();
 
-    if(isValid(name,email,password,date)){
+    if(isValid(name,email,password,date, password2)){
         const reqHeaders = new Headers();
         reqHeaders.append("Content-Type", "text/plain");
         reqHeaders.append("name", name);
