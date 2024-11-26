@@ -9,3 +9,9 @@
     background-color: #e4c2a1 !important; /* Slightly darker shade for hover effect */
     border-color: #e4c2a1 !important;
 }
+
+#searchField{
+    width: 100%;
+    margin-right: 5px;
+}
+

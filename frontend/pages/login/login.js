@@ -113,7 +113,7 @@ async function performLogin(){
         }else{
             // deu erro
             //mostar o texto de erro...
-            let message = (await response.status) + " - " + (await response.text());
+            let message = (await response.status) + " - " + (await response.text()) + " ou email/senha inválido.";
             showErrorMessage(message);
         }
 

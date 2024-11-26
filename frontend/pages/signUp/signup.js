@@ -23,7 +23,7 @@ function isValid(name, email, password, date ){
         valid = true
     }
     else if (validarString(email) == false){
-        showErrorMessage("Email invalido, deve ter '@' e '.' no seu email ");
+        showErrorMessage("Email inválido.");
     }
     else if(email.length == 0 && password.length == 0 && name.length == 0 && date.length == 0){
         showErrorMessage("Por favor, preencha todos os campos.");

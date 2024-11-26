@@ -183,7 +183,7 @@ export namespace AccountsManager {
                 last_token = token;
             }else{
                 res.statusCode = 401;
-                res.send('Conta não existente.')
+                res.send('Conta não existente')
             }
         }
         else{
