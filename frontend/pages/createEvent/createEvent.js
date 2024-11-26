@@ -85,7 +85,7 @@ async function performCreate(){
             cleanError();
             let message = (await response.status) + " - " + " Evento enviado para análise.";
             showMessage(message);
-            switchWindow();
+            switchWindow('/frontend/pages/home/home.html');
         }else{
             let message = (await response.status) + " - " + (await response.text());
             if(await response.status == 401){

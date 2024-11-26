@@ -22,6 +22,8 @@ async function PerformWalletInfo(){
         }
     );
     if(response.ok){
+        const msgBox = document.getElementById("messageBox");
+        msgBox.hidden = true;
         let info = await response.json();
         const creditHistory = info.financialInfo;
         const betHistory = info.betsInfo;

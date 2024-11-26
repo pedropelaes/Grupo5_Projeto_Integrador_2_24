@@ -1,6 +1,8 @@
 import { switchWindow } from "/frontend/pages/home/home.js";
 import { showErrorMessage, cleanError, showMessage } from "/frontend/pages/login/login.js";
 import { showLoginButton } from "/frontend/pages/wallet/wallet.js" 
+import { botaoSearch } from "/frontend/pages/searchEvent/searchEvent.js";
+
 
 function isValid(cartao, nome, validade, cvv, valor){
     var valid = false;
@@ -71,3 +73,8 @@ async function performAddFunds() {
     }
 }
 window.performAddFunds = performAddFunds;
+window.onload = function() {
+    if(window.location.pathname.includes("addFunds")) {
+        botaoSearch();
+    }
+}

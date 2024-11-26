@@ -3,7 +3,7 @@ body {
     
 }
 .navbar {
-    z-index: 1030; /* Bootstrap padrão */
+    z-index: 1030;
 }
 .container{
     border-radius: 20px;
@@ -19,13 +19,15 @@ body {
 
 }
 #messageBox {
-    display: flex; /* Ativa o Flexbox */
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center; /* Centraliza verticalmente */
-    height: 100px; /* Ajuste o valor conforme necessário */
-    width: 100%; /* Garante que ocupe todo o espaço disponível */
-    text-align: center; /* Para centralizar conteúdo baseado em texto */
+    display: flex; 
+    justify-content: top; 
+    align-items: center; 
+    height: 100px; 
+    width: 100%; 
+    text-align: center; 
+    z-index: 2000;
 }
+
 .main-container {
     display: flex; 
     border-radius: 20px;

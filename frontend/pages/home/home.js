@@ -138,7 +138,6 @@ function showModalVerMais(evento){
 window.onload = function(){
     if(window.location.pathname.includes("home")){
         PerformShowEvents();
-        
         botaoSearch();
     }
 }

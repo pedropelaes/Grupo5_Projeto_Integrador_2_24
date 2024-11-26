@@ -1,6 +1,8 @@
 import { switchWindow } from "/frontend/pages/home/home.js";
 import { showErrorMessage, cleanError, showMessage } from "/frontend/pages//login/login.js";
 import { showLoginButton } from "/frontend/pages/wallet/wallet.js" 
+import { botaoSearch } from "/frontend/pages/searchEvent/searchEvent.js";
+
 
 function toggleInputField() {
     const method = document.querySelector('input[name="metodoSaque"]:checked').value;
@@ -22,8 +24,8 @@ function isValid(valor, Cpix, Cconta, chavePix, nome, cpf, conta, banco, agencia
         if(chavePix.length == 0){
             showErrorMessage("Por favor, preencha a chave pix.");
         }
-        else if(valor < 0 || valor.length == 0){
-            showErrorMessage("Insira um valor valido,");
+        else if(valor <= 0 || valor.length == 0){
+            showErrorMessage("Insira um valor válido.");
         }else{
             valid = true;
         }
@@ -96,3 +98,8 @@ async function performWithdrawFunds(){
     }
 }
 window.performWithdrawFunds = performWithdrawFunds;
+window.onload = function() {
+    if(window.location.pathname.includes("withdrawFunds")){
+        botaoSearch()
+    }
+}

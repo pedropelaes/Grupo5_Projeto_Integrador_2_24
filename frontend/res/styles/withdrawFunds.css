@@ -39,3 +39,8 @@
 #botaoLogin {
     width: 500px;
 }
+
+#searchField{
+    width: 100%;
+    margin-right: 5px;
+}
