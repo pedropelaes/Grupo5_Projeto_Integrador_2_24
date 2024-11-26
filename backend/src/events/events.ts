@@ -665,11 +665,11 @@ export namespace EventsManager {
             valorPerdedor = valorNao;
         }
         console.log(apostasVencedoras.rows);
-        const qnt_vencedores = (apostasVencedoras.rows?.length as any);
+        const qnt_vencedores = (apostasVencedoras.rows?.length as number);
         
         let valor_vencedor:number;
-        for(let i = 0; i<qnt_vencedores; i++){  // 0:id_aposta | 1:id_usuario | 2: id_wallet | 3: total de cotas | 4: Valor vencedor
-            valor_vencedor =(apostasVencedoras.rows as any)[i][4] + ((apostasVencedoras.rows as any)[i][3] / cotasVencedoras) * valorPerdedor;
+        for(let i = 0; i<qnt_vencedores; i++){  // 0:id_aposta | 1:id_usuario | 2: total de cotas | 3: Valor vencedor
+            valor_vencedor =(apostasVencedoras.rows as any)[i][3] + ((apostasVencedoras.rows as any)[i][2] / cotasVencedoras) * valorPerdedor;
             let premiarVencedor = await connection.execute(
                 `UPDATE WALLET
                     SET SALDO = SALDO + :valor_vencedor
@@ -681,7 +681,7 @@ export namespace EventsManager {
             )
             await connection.commit();
             console.log(`Usuario premiado: ${(apostasVencedoras.rows as any)[i][1]} | Valor: ${valor_vencedor} | Id da aposta: ${(apostasVencedoras.rows as any)[i][0]}`);
-            FinancialManager.addTransferHistory("PREMIAÇÃO", (apostasVencedoras.rows as any)[i][2], valor_vencedor);
+            FinancialManager.addTransferHistory("PREMIAÇÃO", await FinancialManager.getWalletId((apostasVencedoras as any)[i][1]), valor_vencedor);
             return true;
         }
 

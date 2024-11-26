@@ -34,7 +34,7 @@ export namespace FinancialManager{
         console.log(`Histórico de transações atualizado. Valor:R$${valor} | Tipo:${tipo}`);
     }
 
-    async function getWalletId(id: number): Promise<any>{
+    export async function getWalletId(id: number): Promise<any>{
         const connection = await conexao();
 
         let buscarCarteira = await connection.execute(
@@ -172,62 +172,70 @@ export namespace FinancialManager{
             return null;
         }
         console.log((checarFundos.rows as any));
-        const saldoConta = (checarFundos.rows as any)[0][0];
-        if(modo === 2){
-            if(saldoConta !== undefined && saldoConta >= valor && valor <= 101000){
-                let retirarFundos = await connection.execute(
-                    `UPDATE WALLET
-                        SET SALDO = SALDO - :valor
-                        WHERE ID_WALLET = :wallet_id`,
-                        {
-                            valor: valor,
-                            wallet_id: wallet_id
-                        }
-                )
-                connection.commit();
-                if(valor <= 100){
-                    valor = valor - (valor*0.04);
-                    console.log("Taxa: 4%"); 
-                }else if(valor <=1000){
-                    valor = valor - (valor*0.03);
-                    console.log("Taxa: 3%"); 
-                }else if(valor <=5000){
-                    valor = valor - (valor*0.02);
-                    console.log("Taxa: 2%"); 
-                }else if(valor <=100000){
-                    valor = valor - (valor*0.01);
-                    console.log("Taxa: 1%"); 
-                }
+        if (checarFundos && checarFundos.rows && checarFundos.rows.length > 0) {
+            const saldoConta = (checarFundos.rows as any)[0][0];
+            if(modo === 2){
+                if(saldoConta !== undefined && saldoConta >= valor && valor <= 101000){
+                    let retirarFundos = await connection.execute(
+                        `UPDATE WALLET
+                            SET SALDO = SALDO - :valor
+                            WHERE ID_WALLET = :wallet_id`,
+                            {
+                                valor: valor,
+                                wallet_id: wallet_id
+                            }
+                    )
+                    connection.commit();
+                    if(valor <= 100){
+                        valor = valor - (valor*0.04);
+                        console.log("Taxa: 4%"); 
+                    }else if(valor <=1000){
+                        valor = valor - (valor*0.03);
+                        console.log("Taxa: 3%"); 
+                    }else if(valor <=5000){
+                        valor = valor - (valor*0.02);
+                        console.log("Taxa: 2%"); 
+                    }else if(valor <=100000){
+                        valor = valor - (valor*0.01);
+                        console.log("Taxa: 1%"); 
+                    }
 
-                console.log(`Valor sacado: ${valor}| Id da carteira: ${wallet_id}.` );
-                await addTransferHistory("SAQUE", wallet_id, valor);
-                return valor;
-            }else if(saldoConta !== undefined && saldoConta >= valor && valor > 101000){
-                console.log(`Valor limite de saque excedido. Valor:${valor}`);
-                return valor;
-            }else{
-                console.log(`Impossivel sacar, saldo insuficiente.`);
-                return null;
+                    console.log(`Valor sacado: ${valor}| Id da carteira: ${wallet_id}.` );
+                    await addTransferHistory("SAQUE", wallet_id, valor);
+                    return valor;
+                }else if(saldoConta !== undefined && saldoConta >= valor && valor > 101000){
+                    console.log(`Valor limite de saque excedido. Valor:${valor}`);
+                    return valor;
+                }else{
+                    console.log(`Impossivel sacar, saldo insuficiente.`);
+                    return null;
+                }
+            }else if(modo === 1){
+                if(saldoConta !== undefined && saldoConta >= valor){
+                    let retirarFundos = await connection.execute(
+                        `UPDATE WALLET
+                            SET SALDO = SALDO - :valor
+                            WHERE ID_WALLET = :wallet_id`,
+                            {
+                                valor: valor,
+                                wallet_id: wallet_id
+                            }
+                    )
+                    connection.commit();
+                    console.log(`Aposta realizada. Valor: ${valor}`);
+                    return valor;
+                }else{
+                    console.log(`Erro ao realizar aposta. Saldo excedido.`);
+                    return null;
+                }
             }
-        }else if(modo === 1){
-            if(saldoConta !== undefined && saldoConta >= valor){
-                let retirarFundos = await connection.execute(
-                    `UPDATE WALLET
-                        SET SALDO = SALDO - :valor
-                        WHERE ID_WALLET = :wallet_id`,
-                        {
-                            valor: valor,
-                            wallet_id: wallet_id
-                        }
-                )
-                connection.commit();
-                console.log(`Aposta realizada. Valor: ${valor}`);
-                return valor;
-            }else{
-                console.log(`Erro ao realizar aposta. Saldo excedido.`);
-                return null;
-            }
-        } 
+        }
+
+        else {
+            console.log('Impossível sacar. Conta sem carteira.');
+            return null;
+    }
+    
         console.log(`Erro.`);
         return null;
     }

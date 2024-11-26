@@ -22,6 +22,7 @@ function toDate(stringData){
     return new Date(stringData + "T00:00:00");
 }
 
+
 function isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota){
     var valid = false;
 
@@ -114,16 +115,21 @@ window.onload = function(){
             if(dataInicio.value.length == 0 || toDate(dataInicio.value) > toDate(dataFim.value)){
                 dataFim.disabled = 'disabled';
                 dataFim.value = null;
-            }else{
+            } else if (toDate(dataInicio.value) < dataDeHoje()) {
+                dataEvento = null;
+            }
+            else{
                 dataFim.disabled = false;
             }
         }
         function checkDataFim(){
             if(dataFim.value.length == 0 || dataFim.value.length == undefined){
                 dataEvento.disabled = 'disabled';
-            }else if(toDate(dataFim.value) > toDate(dataEvento.value)){
+            } else if(toDate(dataFim.value) > toDate(dataEvento.value)){
                 dataEvento.value = null;
                 dataEvento.value.length = undefined;
+            } else if (toDate(dataFim.value) < toDate(dataInicio.value) && dataInicio.value.length > 0) {
+                dataInicio.value = null;
             }
             else{
                 dataEvento.disabled = false;
@@ -133,7 +139,7 @@ window.onload = function(){
         checkDataInicio();
         checkDataFim();
 
-        dataInicio.addEventListener("input", checkDataInicio);
-        dataFim.addEventListener("input", checkDataFim);
+        dataInicio.addEventListener("change", checkDataInicio);
+        dataFim.addEventListener("change", checkDataFim);
     }
 };
