@@ -10,8 +10,12 @@
     border-color: #e4c2a1 !important;
 }
 
-#searchField{
+#searchField {
     width: 100%;
     margin-right: 5px;
 }
 
+#botaoLogin {
+    margin-right: 5px;
+    margin-bottom: 15px;
+}

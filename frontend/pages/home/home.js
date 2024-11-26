@@ -1,4 +1,6 @@
 import { botaoSearch } from "../searchEvent/searchEvent.js";
+import { showLoginButton } from "../wallet/wallet.js";
+
 export function switchWindow(caminho){
     window.location.href = caminho;
 }
@@ -30,12 +32,15 @@ async function PerformShowEvents(){
         }
     );
     if(response.ok){
-        const events = await response.json();
-        const maisApostados = events.maisApostados;
-        const maisProximos = events.maisProximos;
-
+        const object = await response.json();
+        const maisApostados = object.events.maisApostados;
+        const maisProximos = object.events.maisProximos;
         const divProximos = document.getElementById("proximosDeVencer");
         const divMaisApostados = document.getElementById("maisApostados");
+
+        if(object.usuarioLogado == 'SIGNOUT' || object.usuarioLogado == null){
+            showLoginButton();
+        }
         
         for(let i = 0; i<maisProximos.length; i++){
             let event = document.createElement("div");

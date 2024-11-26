@@ -747,11 +747,37 @@ export namespace EventsManager {
         }
         
     }
-    
-    export const showEventsHandler: RequestHandler = async (req:Request, res:Response) =>{
-        const events = await specifyEvents()
-        console.log(events);
-        res.status(200).json(events);
-    }
 
+    async function getLoggedUser(token:string):Promise<any> {
+        const connection = await conexao();
+
+        if(token === null){
+            return null;
+        }
+
+        let getUserInfo = await connection.execute(
+            `SELECT NOME FROM USUARIO
+             WHERE TOKEN_SESSAO = :token`,
+             {
+                token:token
+             }
+        )
+
+        if(getUserInfo && getUserInfo.rows && getUserInfo.rows.length > 0){
+            return (getUserInfo.rows as any)[0][0];
+        }
+        return null;
+    }
+    
+    export const homeHandler: RequestHandler = async (req:Request, res:Response) =>{
+        const user = await getLoggedUser(AccountsManager.last_token as string);
+        const events = await specifyEvents()
+        console.log(user);
+        if(user === null){
+            res.status(200).json({events , usuarioLogado: null});
+        }else{
+            res.status(200).json({events , usuarioLogado: user});
+        }
+        console.log(events);
+    }
 }
