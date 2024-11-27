@@ -1,0 +1,37 @@
+.container{
+    border-radius: 20px;
+}
+.colorbg{
+    background-color:#a20404;
+}
+.fonth1{
+    color: #240000;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 20px;
+
+}
+.main-container {
+    display: flex; 
+    border-radius: 20px;
+    width: 1300px;     
+    height: auto;      
+    justify-content: center; 
+    align-items: center; 
+}
+
+.main-container img {
+    height: 500px;
+}
+
+#messageBox {
+    display: flex; /* Ativa o Flexbox */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    height: 100px; /* Ajuste o valor conforme necessário */
+    width: 100%; /* Garante que ocupe todo o espaço disponível */
+    text-align: center; /* Para centralizar conteúdo baseado em texto */
+}
+
+#botaoCadastro {
+    width: 500px;
+}

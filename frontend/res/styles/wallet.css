@@ -1,0 +1,51 @@
+body {
+    margin-top: 70px;
+    
+}
+.navbar {
+    z-index: 1030;
+}
+.container{
+    border-radius: 20px;
+    position: relative;;
+}
+.colorbg{
+    background-color:#a20404;
+}
+.fonth1{
+    color: #240000;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 20px;
+
+}
+#messageBox {
+    display: flex; 
+    justify-content: top; 
+    align-items: center; 
+    height: 100px; 
+    width: 100%; 
+    text-align: center; 
+    z-index: 2000;
+}
+
+.main-container {
+    display: flex; 
+    border-radius: 20px;
+    width: 1300px;     
+    height: auto;      
+    justify-content: center; 
+    align-items: center; 
+}
+
+#botaoCriar{
+    width: 135px;
+}
+
+#searchField{
+    width: 100%;
+    margin-right: 5px;
+}
+
+#fieldBusca{
+    width: 40%;
+}

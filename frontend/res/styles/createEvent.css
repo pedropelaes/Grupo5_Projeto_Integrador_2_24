@@ -1,0 +1,40 @@
+body {
+    padding-top: 56px;
+}
+.container{
+    border-radius: 20px;
+}
+.colorbg{
+    background-color:#a20404;
+}
+.fonth1{
+    color: #240000;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 20px;
+
+}
+.main-container {
+    display: flex; 
+    border-radius: 20px;
+    width: 1300px;     
+    height: auto;      
+    justify-content: center; 
+    align-items: center; 
+}
+
+.main-container img {
+    height: 500px;
+}
+
+#messageBox {
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 100px; 
+    width: 100%; 
+    text-align: center;
+}
+
+#botaoLogin {
+    width: 500px;
+}

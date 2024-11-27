@@ -3,6 +3,8 @@ import OracleDB from "oracledb";
 import dotenv from 'dotenv';
 dotenv.config();
 import conexao from "../connection";
+import { log } from "console";
+import { sign } from "crypto";
 
 /*
     Nampespace que contém tudo sobre "contas de usuários"
@@ -31,6 +33,18 @@ export namespace AccountsManager {
         if(checarConta && checarConta.rows && checarConta.rows.length > 0){
             return true;
         }
+    }
+
+    async function checkDate(user: conta_usuario): Promise<boolean> {
+        const dataHoje = new Date();
+        const dataMinima = new Date(dataHoje.getFullYear() - 18, dataHoje.getMonth(), dataHoje.getDate());
+    
+        const dataNascimento = new Date(user.data_nasc); 
+    
+        if (dataNascimento < dataMinima) {
+            return false; 
+        }
+        return true;
     }
 
     async function salvarconta(ua: conta_usuario){
@@ -71,9 +85,14 @@ export namespace AccountsManager {
                 data_nasc: pBirthdate
             }
             if(!await checkUser(newAccount)){
-                salvarconta(newAccount);
-                res.statusCode = 200; 
-                res.send(`Nova conta cadastrada.`);
+                if(! await checkDate(newAccount)){
+                    salvarconta(newAccount);
+                    res.statusCode = 200; 
+                    res.send(`Nova conta cadastrada.`);
+                }else{
+                    res.statusCode = 406;
+                    res.send("Site permitido para maiores de 18 anos");
+                }
             }else{
                 res.statusCode = 406;
                 res.send("Email já cadastrado.");
@@ -112,7 +131,7 @@ export namespace AccountsManager {
 
     async function login(email:string, senha:string): Promise<any> {
 
-        const connection= await conexao()
+        const connection= await conexao();
 
         let accountsRows = await connection.execute(
             'SELECT * FROM USUARIO WHERE EMAIL = :email AND SENHA = :senha',
@@ -133,6 +152,21 @@ export namespace AccountsManager {
 
     }
 
+    async function checkFirstLogin(email: string): Promise<any>{
+        const connection= await conexao();
+
+        let checkTokenNull = await connection.execute(
+            `SELECT TOKEN_SESSAO
+             FROM USUARIO
+             WHERE EMAIL = :email`,
+            {email: email}
+        )
+        if((checkTokenNull.rows as any)[0][0] === null){
+            return true;
+        }
+        return false;
+    }
+
     export let last_token: string | null = null;
 
     export const loginHandler: RequestHandler = async (req:Request,res:Response)=>{
@@ -142,13 +176,14 @@ export namespace AccountsManager {
         if(pEmail && pPassword){
             const LOGIN = await login(pEmail,pPassword)
             if(LOGIN !== null){
+                const primeiroLogin = await checkFirstLogin(pEmail);
                 const token = await createSessionToken(pEmail, pPassword);
                 res.statusCode = 200;
-                res.send(`Login executado. Sessão: ${token}`);
+                res.json({"Login executado, Sessão":token, "Primeiro login":primeiroLogin});
                 last_token = token;
             }else{
                 res.statusCode = 401;
-                res.send('Conta não existente.')
+                res.send('Conta não existente')
             }
         }
         else{
@@ -157,8 +192,46 @@ export namespace AccountsManager {
         }
     }
 
+    async function signOut(): Promise <any>{
+        const connection= await conexao();
+        
+        let findUserLogged = await connection.execute(
+            `SELECT EMAIL
+             FROM USUARIO
+             WHERE TOKEN_SESSAO = :token_atual`,
+            {token_atual: last_token}
+        )
+        console.log(`Usuario logado: ${findUserLogged.rows}`)
+        if(findUserLogged && findUserLogged.rows && findUserLogged.rows.length > 0){
+            
+            let logOff = await connection.execute(
+                `UPDATE USUARIO
+                SET TOKEN_SESSAO = 'SIGNOUT'
+                WHERE EMAIL = :email`,
+                {email: (findUserLogged.rows as any)[0][0]}
+            )
+            connection.commit();
+            last_token = null;
+            console.log(`SignOut: ${findUserLogged.rows}`, logOff);
+            return (findUserLogged.rows as any)[0][0];
+        }else{
+            return null;
+        }
+    }
+
+    export const signOutHandler: RequestHandler = async (req:Request, res:Response)=>{
+        const logOff = await signOut();
+        if(logOff !== null){
+            res.statusCode = 200;
+            res.send(`LogOut ${logOff}.`);
+        }else{
+            res.statusCode = 401;
+            res.send("Nenhum usuário logado");
+        }
+    }
+
     export async function loginADM(email:string, senha:string) {
-        const connection= await conexao()
+        const connection= await conexao();
 
         let accountsRows = await connection.execute(
             'SELECT * FROM MODERADOR WHERE EMAIL = :email AND SENHA = :senha',

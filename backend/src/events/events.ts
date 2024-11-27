@@ -7,8 +7,19 @@ import conexao from "../connection";
 import { FinancialManager } from "../financial/financial";
 import { AccountsManager } from "../accounts/accounts";
 import { fstat, stat } from "fs";
+import nodemailer from "nodemailer";
 dotenv.config();
 
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_ADM, 
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  
 export namespace EventsManager {
     type event={
         id_evento: number | undefined,
@@ -22,13 +33,40 @@ export namespace EventsManager {
         id_criador: number | undefined,
     }
 
+    async function sendEmail(to: string, subject: string, ){
+        
+        const mailOptions = {
+            from: process.env.EMAIL_USER,  
+            to: to,                        
+            subject: subject,              
+            text:`
+            Prezado(a) cliente,
+
+            Agradecemos por utilizar a JapaBet como sua plataforma de criação de eventos. Informamos que o evento criado não foi aprovado devido ao motivo descrito no assunto desta mensagem.
+
+            Para que o evento possa ser aceito, solicitamos que o recrie seguindo as adequações necessárias. Estamos à disposição para esclarecer quaisquer dúvidas ou fornecer orientações.
+
+            Atenciosamente,
+            Equipe JapaBet`,                    
+        };
+
+        try{
+            const info = await transporter.sendMail(mailOptions);
+            console.log(`{Email enviado. ${info.response}}`);
+            return {success: true, info};
+        }catch(error){
+            console.log(`Erro ao enviar email. ${error}`);
+            return {success: false, error}
+        }
+    }
+
     async function getEventStatus(id_evento:number | null, titulo: string | null): Promise<any>{
             const connection = await conexao();
 
             if(titulo === null){
                 let statusEvento = await connection.execute(
                     `SELECT STATUS
-                    FROM EVENTOS
+                    FROM EVENTO
                     WHERE ID_EVENTO = :id_evento`,
                     {id_evento: id_evento}
                 )
@@ -41,7 +79,7 @@ export namespace EventsManager {
                 titulo = titulo.toUpperCase();
                 let statusEvento = await connection.execute(
                     `SELECT STATUS
-                    FROM EVENTOS
+                    FROM EVENTO
                     WHERE TITULO = :titulo`,
                     {titulo: titulo}
                 )
@@ -59,7 +97,7 @@ export namespace EventsManager {
     event.titulo = event.titulo.toUpperCase();
         let checarTitulo = await connection.execute(
             `SELECT TITULO
-             FROM EVENTOS
+             FROM EVENTO
              WHERE TITULO = :titulo`,
             {
                 titulo: event.titulo
@@ -72,8 +110,8 @@ export namespace EventsManager {
         }
 
         let criareventos = await connection.execute(
-            `INSERT INTO EVENTOS(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA, ID_CRIADOR) 
-            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'EM ANALISE', :valor_cota, 0, 0, :id_criador)`,
+            `INSERT INTO EVENTO(ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, QUANTIDADECOTAS, TOTAL_APOSTA, ID_CRIADOR, ID_MODERADOR) 
+            VALUES(SEQ_EVENTO.NEXTVAL, UPPER(:titulo), UPPER(:descricao), TO_DATE(:data_inicio, 'YYYY-MM-DD'), TO_DATE(:data_fim, 'YYYY-MM-DD'), TO_DATE(:data_evento, 'YYYY-MM-DD'), 'EM ANALISE', :valor_cota, 0, 0, :id_criador, 1)`,
             {
                 titulo: event.titulo,
                 descricao: event.descricao,
@@ -98,7 +136,7 @@ export namespace EventsManager {
 
         const VC = eValorCota ? parseInt(eValorCota, 10): undefined; //converte a requisição do valor da cota para numero   
         
-        if(eTitulo && eDesc && eDataInicio && eDataFim && eDataEvento  && VC !== undefined && VC > 1){
+        if(eTitulo && eDesc && eDataInicio && eDataFim && eDataEvento  && VC !== undefined && VC >= 1){
             if(await AccountsManager.checkToken(AccountsManager.last_token as string)){
                 const user_id = await AccountsManager.checkToken(AccountsManager.last_token as string)
                 const novoevento:event = {
@@ -130,13 +168,15 @@ export namespace EventsManager {
         }
     }
 
-    async function getEvent(busca: string, req:string): Promise<event[] | null>{
-        const connection= await conexao()
-        busca = busca.toUpperCase();
+    async function getEvent(busca: string, req:string): Promise<any>{
+        const connection= await conexao();
+        if(req !== "usuario"){
+            busca = busca.toUpperCase();
+        }
         let buscarevento;
         if(req === "status"){
             buscarevento = await connection.execute(
-                `SELECT * FROM EVENTOS WHERE STATUS = :status`,
+                `SELECT * FROM EVENTO WHERE STATUS = :status`,
                 {
                     status: busca,
                 },
@@ -144,25 +184,54 @@ export namespace EventsManager {
             ) 
         }else if(req === "titulo"){
             buscarevento = await connection.execute(
-                `SELECT * FROM EVENTOS WHERE TITULO = :titulo`,
+                `SELECT * FROM EVENTO WHERE TITULO = :titulo`,
                 {
                     titulo: busca,
                 },
                 {outFormat: OracleDB.OUT_FORMAT_OBJECT}
             ) 
+        }else if(req === "usuario"){
+            const getUserId = await connection.execute(
+                `SELECT ID_USUARIO FROM USUARIO WHERE EMAIL = :email`,
+                {email: busca}
+            )
+            
+            buscarevento = await connection.execute(
+                `SELECT TO_CHAR(DATA_EVENTO, 'DD/MM/YYYY') AS DATA_EVENTO, TO_CHAR(DATA_FIM, 'DD/MM/YYYY') AS DATA_FIM, TO_CHAR(DATA_INICIO, 'DD/MM/YYYY') AS DATA_INICIO, DESCRICAO, TITULO, VALORCOTA
+                 FROM EVENTO
+                 WHERE ID_CRIADOR = :id_user AND STATUS = 'APROVADO'`,
+                {id_user: (getUserId.rows as any)[0][0]},
+                {outFormat: OracleDB.OUT_FORMAT_OBJECT}
+            )
         }
         
         console.log("Busca: ", busca);
         if(buscarevento && buscarevento.rows && buscarevento.rows.length > 0){
-            return buscarevento.rows as event[];
+            return buscarevento.rows;
         }else{
             return null;
         }
     }
 
+    async function getUserEmail(token:string): Promise<any>{
+        const connection = await conexao();
+        let buscarEmail = await connection.execute(
+            `SELECT EMAIL
+             FROM USUARIO
+             WHERE TOKEN_SESSAO = :token`,
+            {token: token}
+        )
+        console.log(buscarEmail.rows);
+        if(buscarEmail && buscarEmail.rows && buscarEmail.rows.length > 0){
+            return (buscarEmail.rows as any)[0][0];
+        }
+        return null;
+    }
+
     export const getEventHandler: RequestHandler=async(req: Request, res:Response)=>{
         const gStatus = req.get("status");
         const gTitulo = req.get("titulo");
+        const gEmail = req.get("usuario");
 
         if(gStatus){
             const busca = await getEvent(gStatus, "status");
@@ -170,6 +239,16 @@ export namespace EventsManager {
         }else if(gTitulo){
             const busca = await getEvent(gTitulo, "titulo");
             res.status(200).json({"Resultado da busca":busca});
+        }else if(gEmail){
+            const token = AccountsManager.last_token;
+            if(token === null){
+                res.statusCode = 401;
+                res.send("É necessário estar logado para visualizar seus eventos.");
+            }else{
+                const email = await getUserEmail(token as string);
+                const busca = await getEvent(email, "usuario");
+                res.status(200).json({"Resultado da busca":busca});
+            }
         }
         else{
             res.statusCode=400;
@@ -182,7 +261,7 @@ export namespace EventsManager {
         titulo = titulo.toUpperCase();
         let getIdCriador = await connection.execute(
             `SELECT ID_CRIADOR
-             FROM EVENTOS
+             FROM EVENTO
              WHERE TITULO = :titulo`,
             {
                 titulo: titulo
@@ -193,7 +272,7 @@ export namespace EventsManager {
         }
         
         const apagarEvento = await connection.execute(
-            `UPDATE EVENTOS 
+            `UPDATE EVENTO 
                 SET STATUS = 'DELETADO' 
                 WHERE TITULO = :titulo `,
         {
@@ -233,14 +312,14 @@ export namespace EventsManager {
     }
 
     async function evaluateEvent(id:number, evaluate:string): Promise<any>{
-        const connection= await conexao()
+        const connection= await conexao();
         if(await getEventStatus(id, null)!=="EM ANALISE"){
             console.log("Evento não esta em analise.");
             return false;
         }
         else if(evaluate === "aprovado"){
             const avaliarEvento = await connection.execute(
-                `UPDATE EVENTOS 
+                `UPDATE EVENTO 
                     SET STATUS = 'APROVADO' 
                     WHERE ID_EVENTO = :id_evento `,
                 {
@@ -253,7 +332,7 @@ export namespace EventsManager {
         }
         else if(evaluate === "reprovado"){
             const avaliarEvento = await connection.execute(
-                `UPDATE EVENTOS 
+                `UPDATE EVENTO 
                     SET STATUS = 'REPROVADO' 
                     WHERE ID_EVENTO = :id_evento `,
                 {
@@ -262,7 +341,7 @@ export namespace EventsManager {
             )   
             console.log("Aposta reprovada.");
             connection.commit();
-            return true;
+            return "rep";
         }
         else{
             console.log("Avaliação invalida.");
@@ -271,22 +350,53 @@ export namespace EventsManager {
         
     }
     
+    async function getCreatorEmail(id: number): Promise<any>{
+        const connection= await conexao();
+        let getCreatorId = await connection.execute(
+            `SELECT ID_CRIADOR
+             FROM EVENTO
+             WHERE ID_EVENTO = :id_evento`,
+            {
+                id_evento: id
+            }
+        )
+        const id_criador = (getCreatorId.rows as any)[0][0];
+        let getCreatorEmail = await connection.execute(
+            `SELECT EMAIL
+             FROM USUARIO
+             WHERE ID_USUARIO = :id_criador`,
+            {
+                id_criador: id_criador
+            }
+        )
+        const email_criador = (getCreatorEmail.rows as any)[0][0];
+        return email_criador;
+    }
+    
     export const evaluateNewEventHandler: RequestHandler = async (req: Request, res:Response)=>{
         const eId = req.get("id_evento");
         const eEvaluate = req.get("evaluate");
         const fEmail = req.get("email_adm");
         const fSenha = req.get("senha_adm");
+        const eMotivo = req.get("motivo");
 
         const ID = eId ? parseInt(eId, 10): undefined;
         
-        if(ID && eEvaluate && fEmail && fSenha){
+        if(ID && eEvaluate && fEmail && fSenha && eMotivo){
             const loginADM = await AccountsManager.loginADM(fEmail, fSenha);
             if(loginADM !== null){
                 const avaliacao = await evaluateEvent(ID, eEvaluate);
                 if(avaliacao === true){
                     res.statusCode = 200;
-                    res.send(`Evento avaliado.`);
-                }else{
+                    res.send(`Evento avaliado. Aprovado.`);
+                }else if(avaliacao === "rep"){
+                    const email = await getCreatorEmail(ID);
+                    const subject: string = "Evento reprovado. Motivo: "+eMotivo;
+                    const infoEmail = await sendEmail(email, subject);
+                    res.statusCode = 200;
+                    res.send(`Evento avaliado. Reprovado por motivo: ${eMotivo}. Email do criador: ${email}. ${infoEmail.success}`);
+                }
+                else{
                     res.statusCode = 403;
                     res.send(`Avaliação Invalida.`);
                 }
@@ -303,6 +413,21 @@ export namespace EventsManager {
     async function betOnEvent(token: string, cotas: number, titulo: string, opcao: string):Promise<boolean>{ 
         if(await getEventStatus(null, titulo) === "APROVADO"){
             const connection = await conexao();
+
+            const validEventDate = await connection.execute(
+                `SELECT ID_EVENTO
+                    FROM EVENTO
+                    WHERE TITULO = :titulo
+                        AND data_inicio <= TRUNC(SYSDATE)`,
+                 {
+                    titulo:titulo
+                 }
+            )
+            if(validEventDate && validEventDate.rows && validEventDate.rows.length == 0){
+                console.log("Período de apostas ainda não iniciado");
+                return false;
+            }
+
             const getUserId = await connection.execute(
                 `SELECT ID_USUARIO FROM USUARIO WHERE TOKEN_SESSAO = :token`,
                 {token: token}
@@ -323,12 +448,12 @@ export namespace EventsManager {
             console.log(`Id carteira buscado: ${id_carteira}`);
 
             const getValorCotas = await connection.execute(
-                `SELECT VALORCOTA FROM EVENTOS WHERE TITULO = :titulo`,
+                `SELECT VALORCOTA FROM EVENTO WHERE TITULO = :titulo`,
                 {titulo: titulo}
             )
 
             let updateQtdCotas = await connection.execute(
-                `UPDATE EVENTOS
+                `UPDATE EVENTO
                     SET QUANTIDADECOTAS = QUANTIDADECOTAS + :qtd_cotas
                     WHERE TITULO = :titulo`,
                 {
@@ -342,7 +467,7 @@ export namespace EventsManager {
             console.log(`Valor das cotas: ${valorCotas}`);
             
             let updateTotalValue = await connection.execute(
-                `UPDATE EVENTOS
+                `UPDATE EVENTO
                     SET TOTAL_APOSTA = TOTAL_APOSTA + :valor
                     WHERE TITULO = :titulo`,
                 {
@@ -369,7 +494,7 @@ export namespace EventsManager {
                 
                 let getEventId = await connection.execute(
                     `SELECT ID_EVENTO
-                     FROM EVENTOS
+                     FROM EVENTO
                      WHERE TITULO = :titulo`,
                     {
                         titulo: titulo
@@ -378,11 +503,10 @@ export namespace EventsManager {
                 const id_evento = (getEventId.rows as any)[0][0];
 
                 let saveBet= await connection.execute(
-                    `INSERT INTO HISTORICO_APOSTAS(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, FK_ID_WALLET, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
-                        VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_usuario, :id_evento, :id_carteira, SYSTIMESTAMP, SYSDATE, :cotas, :valor, :opcao)`,
+                    `INSERT INTO APOSTA(ID_APOSTA, FK_ID_USUARIO, FK_ID_EVENTO, HORA_APOSTA, DATA_APOSTA, COTAS, VALOR, OPCAO_APOSTA )
+                        VALUES(SEQ_HIST_APOSTAS.NEXTVAL, :id_usuario, :id_evento, SYSTIMESTAMP, SYSDATE, :cotas, :valor, :opcao)`,
                     {
                         id_evento: id_evento,
-                        id_carteira: id_carteira,
                         valor: valorCotas,
                         opcao: opt,
                         id_usuario: id_usuario,
@@ -420,7 +544,7 @@ export namespace EventsManager {
                     res.send(`Aposta realizada. Cotas:${qtd_cotas}.`);
                 }else{
                     res.statusCode = 403;
-                    res.send(`Erro ao realizar aposta. Aposta não aprovada ou usuario sem saldo ou carteira.`);
+                    res.send(`Erro ao realizar aposta. Aposta não aprovada, usuario sem saldo ou carteira ou período de apostas ainda não iniciado.`);
                 }
             }else{
                 res.statusCode = 401;
@@ -438,9 +562,11 @@ export namespace EventsManager {
         let searchEvent;
         keyWord = `%${keyWord}%`;
         searchEvent = await connection.execute(
-            `SELECT ID_EVENTO, TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, STATUS, VALORCOTA, RESULTADO_EVENTO 
-            FROM EVENTOS 
-            WHERE DESCRICAO LIKE UPPER(:keyword) OR TITULO LIKE UPPER(:keyword)`,
+            `SELECT ID_EVENTO, TITULO, DESCRICAO, TO_CHAR(DATA_INICIO, 'DD/MM/YYYY') AS INICIO, TO_CHAR(DATA_FIM, 'DD/MM/YYYY') AS FIM, TO_CHAR(DATA_EVENTO, 'DD/MM/YYYY') AS DATA, STATUS, VALORCOTA, RESULTADO_EVENTO 
+            FROM EVENTO 
+            WHERE (DESCRICAO LIKE UPPER(:keyword) OR TITULO LIKE UPPER(:keyword)) 
+            AND STATUS = 'APROVADO' 
+            AND SYSDATE < DATA_EVENTO`,
             {
                 keyword: keyWord,
             },
@@ -490,7 +616,7 @@ export namespace EventsManager {
         }
         
         let finalizarEvento = await connection.execute(
-            `UPDATE EVENTOS
+            `UPDATE EVENTO
                 SET STATUS = 'FINALIZADO',
                     RESULTADO_EVENTO = :resultado
                 WHERE ID_EVENTO = :id_evento`,
@@ -503,7 +629,7 @@ export namespace EventsManager {
         console.log(`Evento finalizado. Id_evento: ${id_evento}`, finalizarEvento);
 
         let apostasSim = await connection.execute(
-            `SELECT SUM(COTAS), SUM(VALOR) FROM HISTORICO_APOSTAS
+            `SELECT SUM(COTAS), SUM(VALOR) FROM APOSTA
              WHERE OPCAO_APOSTA = 1 AND FK_ID_EVENTO = :id_evento`,
             {id_evento: id_evento}
         )
@@ -511,7 +637,7 @@ export namespace EventsManager {
         const valorSim = (apostasSim.rows as any)[0][1];
 
         let apostasNao = await connection.execute(
-            `SELECT SUM(COTAS), SUM(VALOR) FROM HISTORICO_APOSTAS
+            `SELECT SUM(COTAS), SUM(VALOR) FROM APOSTA
              WHERE OPCAO_APOSTA = 0 AND FK_ID_EVENTO = :id_evento`,
             {id_evento: id_evento}
         )
@@ -521,8 +647,8 @@ export namespace EventsManager {
         console.log(`Valor total de nao: ${valorNao} | Valor total de sim: ${valorSim}`);
 
         let apostasVencedoras = await connection.execute(
-            `SELECT ID_APOSTA, FK_ID_USUARIO, FK_ID_WALLET, COTAS, VALOR
-             FROM HISTORICO_APOSTAS
+            `SELECT ID_APOSTA, FK_ID_USUARIO, COTAS, VALOR
+             FROM APOSTA
              WHERE OPCAO_APOSTA = :resultado_aposta AND FK_ID_EVENTO = :id_evento`,
              {
                 resultado_aposta: resultado_aposta,
@@ -539,11 +665,11 @@ export namespace EventsManager {
             valorPerdedor = valorNao;
         }
         console.log(apostasVencedoras.rows);
-        const qnt_vencedores = (apostasVencedoras.rows?.length as any);
+        const qnt_vencedores = (apostasVencedoras.rows?.length as number);
         
         let valor_vencedor:number;
-        for(let i = 0; i<qnt_vencedores; i++){  // 0:id_aposta | 1:id_usuario | 2: id_wallet | 3: total de cotas | 4: Valor vencedor
-            valor_vencedor =(apostasVencedoras.rows as any)[i][4] + ((apostasVencedoras.rows as any)[i][3] / cotasVencedoras) * valorPerdedor;
+        for(let i = 0; i<qnt_vencedores; i++){  // 0:id_aposta | 1:id_usuario | 2: total de cotas | 3: Valor vencedor
+            valor_vencedor =(apostasVencedoras.rows as any)[i][3] + ((apostasVencedoras.rows as any)[i][2] / cotasVencedoras) * valorPerdedor;
             let premiarVencedor = await connection.execute(
                 `UPDATE WALLET
                     SET SALDO = SALDO + :valor_vencedor
@@ -554,8 +680,8 @@ export namespace EventsManager {
                     }
             )
             await connection.commit();
-            console.log(`Usuario premiado: ${(apostasVencedoras.rows as any)[i][1]} | Valor: ${valor_vencedor} | Id da aposta: ${(apostasVencedoras.rows as any)[i][0]}`);
-            FinancialManager.addTransferHistory("PREMIAÇÃO", (apostasVencedoras.rows as any)[i][2], valor_vencedor);
+            console.log(`Usuario premiado: ${(apostasVencedoras.rows as any)[i][1]}  | Valor: ${valor_vencedor} | Id da aposta: ${(apostasVencedoras.rows as any)[i][0]}`);
+            FinancialManager.addTransferHistory("PREMIAÇÃO", await FinancialManager.getWalletId((apostasVencedoras.rows as any)[i][1]), valor_vencedor);
             return true;
         }
 
@@ -589,5 +715,69 @@ export namespace EventsManager {
             res.statusCode = 400;
             res.send(`Parâmetros invalidos ou faltantes`);
         }
+    }
+
+    async function specifyEvents(){
+        const connection = await conexao();
+        
+        const mostBets = await connection.execute(
+            `SELECT TITULO, DESCRICAO, DATA_INICIO, DATA_FIM, DATA_EVENTO, VALORCOTA
+            FROM (
+                SELECT e.TITULO, e.DESCRICAO, TO_CHAR(e.DATA_INICIO, 'DD/MM/YYYY') AS DATA_INICIO, TO_CHAR(e.DATA_FIM, 'DD/MM/YYYY') AS DATA_FIM, TO_CHAR(e.DATA_EVENTO, 'DD/MM/YYYY') AS DATA_EVENTO, e.VALORCOTA,
+                    ROW_NUMBER() OVER (ORDER BY COUNT(a.FK_ID_EVENTO) DESC) AS RNUM
+                FROM APOSTA a
+                JOIN EVENTO e ON a.FK_ID_EVENTO = e.ID_EVENTO
+                WHERE e.STATUS = 'APROVADO'
+                GROUP BY e.TITULO, e.DESCRICAO, e.DATA_INICIO, e.DATA_FIM, e.DATA_EVENTO, e.VALORCOTA
+            ) subquery
+            WHERE RNUM <= 3`
+        )
+         mostBets.rows as any;
+    
+        const endDateNear = await connection.execute(
+            `SELECT e.TITULO, e.DESCRICAO, TO_CHAR(e.DATA_INICIO, 'DD/MM/YYYY'), TO_CHAR(e.DATA_FIM, 'DD/MM/YYYY'), TO_CHAR(e.DATA_EVENTO, 'DD/MM/YYYY'), e.VALORCOTA   
+            FROM EVENTO e
+            WHERE e.DATA_FIM < SYSDATE + 10 AND e.STATUS = 'APROVADO'
+            ORDER BY DATA_FIM
+            FETCH FIRST 3 ROWS ONLY`
+        )
+        return {
+            maisApostados: mostBets.rows as any,
+            maisProximos: endDateNear.rows as any
+        }
+        
+    }
+
+    async function getLoggedUser(token:string):Promise<any> {
+        const connection = await conexao();
+
+        if(token === null){
+            return null;
+        }
+
+        let getUserInfo = await connection.execute(
+            `SELECT NOME FROM USUARIO
+             WHERE TOKEN_SESSAO = :token`,
+             {
+                token:token
+             }
+        )
+
+        if(getUserInfo && getUserInfo.rows && getUserInfo.rows.length > 0){
+            return (getUserInfo.rows as any)[0][0];
+        }
+        return null;
+    }
+    
+    export const homeHandler: RequestHandler = async (req:Request, res:Response) =>{
+        const user = await getLoggedUser(AccountsManager.last_token as string);
+        const events = await specifyEvents()
+        console.log(user);
+        if(user === null){
+            res.status(200).json({events , usuarioLogado: null});
+        }else{
+            res.status(200).json({events , usuarioLogado: user});
+        }
+        console.log(events);
     }
 }
