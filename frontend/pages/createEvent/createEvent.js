@@ -11,7 +11,7 @@ function dataDeHoje(){
     //return d;
 }
 
-/*function minDataFim(){
+function minDataFim(){
     document.getElementById("fieldDataFim").min = String(document.getElementById("fieldDataInicio").value);
 }
 window.minDataFim = minDataFim;
@@ -20,7 +20,7 @@ function minDataEvento(){
     document.getElementById("fieldDataEvento").min = String(dataFim.getFullYear()) + '-' + String(dataFim.getMonth()+1).padStart(2, '0') + '-' + String(dataFim.getDate() + 1).padStart(2, '0');
 }
 window.minDataEvento = minDataEvento;
-*/
+
 
 function toDate(stringData){
     return new Date(stringData + "T00:00:00");
@@ -34,7 +34,7 @@ function isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota){
     console.log("DATA HOJE", dataDeHoje())
     console.log(toDate(dataInicio))
 
-    if(titulo.length > 0 && descricao.length > 0 && dataInicio.length > 0 && dataFim.length > 0 && valorCota.length > 0 && valorCota >= 1 && toDate(dataInicio)>=dataDeHoje()-1 && toDate(dataFim)>=toDate(dataInicio) && toDate(dataEvento)>=toDate(dataFim)){
+    if(titulo.length > 0 && descricao.length > 0 && dataInicio.length > 0 && dataFim.length > 0 && valorCota.length > 0 && valorCota >= 1 && toDate(dataInicio)>=dataDeHoje()-1 && toDate(dataFim)>=toDate(dataInicio) && toDate(dataEvento)>toDate(dataFim)){
         valid = true;
     }
     else if(titulo.length == 0 && descricao.length == 0 && dataInicio.length == 0 && dataFim.length == 0 && valorCota.length == 0){
@@ -52,7 +52,7 @@ function isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota){
     else if(dataFim.length == 0 || toDate(dataFim)<toDate(dataInicio)){
         showErrorMessage("Data de término inválida.");
     }
-    else if(dataEvento.length == 0 || toDate(dataEvento)<toDate(dataFim)){
+    else if(dataEvento.length == 0 || toDate(dataEvento)<=toDate(dataFim)){
         showErrorMessage("Data de evento inválida");
     }
     else if(valorCota < 1){
@@ -118,7 +118,7 @@ window.onload = function(){
         let dataInicio = document.getElementById("fieldDataInicio");
 
          dataInicio.min = dataDeHoje();
-        
+        /*
         let dataFim = document.getElementById("fieldDataFim");
         let dataEvento = document.getElementById("fieldDataEvento");
        

@@ -680,8 +680,8 @@ export namespace EventsManager {
                     }
             )
             await connection.commit();
-            console.log(`Usuario premiado: ${(apostasVencedoras.rows as any)[i][1]} | Valor: ${valor_vencedor} | Id da aposta: ${(apostasVencedoras.rows as any)[i][0]}`);
-            FinancialManager.addTransferHistory("PREMIAÇÃO", await FinancialManager.getWalletId((apostasVencedoras as any)[i][1]), valor_vencedor);
+            console.log(`Usuario premiado: ${(apostasVencedoras.rows as any)[i][1]}  | Valor: ${valor_vencedor} | Id da aposta: ${(apostasVencedoras.rows as any)[i][0]}`);
+            FinancialManager.addTransferHistory("PREMIAÇÃO", await FinancialManager.getWalletId((apostasVencedoras.rows as any)[i][1]), valor_vencedor);
             return true;
         }
 
