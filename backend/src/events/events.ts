@@ -666,9 +666,11 @@ export namespace EventsManager {
         }
         console.log(apostasVencedoras.rows);
         const qnt_vencedores = (apostasVencedoras.rows?.length as number);
+        console.log((apostasVencedoras.rows?.length as number));
         
         let valor_vencedor:number;
         for(let i = 0; i<qnt_vencedores; i++){  // 0:id_aposta | 1:id_usuario | 2: total de cotas | 3: Valor vencedor
+            console.log(i);
             valor_vencedor =(apostasVencedoras.rows as any)[i][3] + ((apostasVencedoras.rows as any)[i][2] / cotasVencedoras) * valorPerdedor;
             let premiarVencedor = await connection.execute(
                 `UPDATE WALLET
@@ -681,10 +683,9 @@ export namespace EventsManager {
             )
             await connection.commit();
             console.log(`Usuario premiado: ${(apostasVencedoras.rows as any)[i][1]}  | Valor: ${valor_vencedor} | Id da aposta: ${(apostasVencedoras.rows as any)[i][0]}`);
-            FinancialManager.addTransferHistory("PREMIAÇÃO", await FinancialManager.getWalletId((apostasVencedoras.rows as any)[i][1]), valor_vencedor);
-            return true;
+            FinancialManager.addTransferHistory("PREMIAÇÃO", await FinancialManager.getWalletId((apostasVencedoras.rows as any)[i][1]), valor_vencedor); 
         }
-
+        return true;
     }
     
     export const finishEventHandler: RequestHandler = async (req:Request, res:Response)=>{
