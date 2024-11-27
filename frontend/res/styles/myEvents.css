@@ -16,3 +16,27 @@
     width: 100%;
     margin-right: 5px;
 }
+
+.btn-delete {
+    background-color: #a32f2f !important; /* Change the background color */
+    border-color: #000000 !important;   /* Change the border color */
+    color: #ffffff !important;         /* Adjust the text color if needed */
+    color: black !important;
+}
+
+.btn-delete:hover {
+    background-color: #680606 !important; /* Slightly darker shade for hover effect */
+    border-color: #000000 !important;
+}
+
+.btn-delete2 {
+    background-color: #a32f2f !important; /* Change the background color */
+    border-color: #000000 !important;   /* Change the border color */
+    color: #ffffff !important;         /* Adjust the text color if needed */
+    color: black !important;
+}
+
+.btn-delete2:hover {
+    background-color: #680606 !important; /* Slightly darker shade for hover effect */
+    border-color: #000000 !important;
+}
