@@ -5,11 +5,13 @@ import { checkLoginButton } from "../betOnEvent/betOnEvent.js";
 
 function dataDeHoje(){
     const data = new Date();
-    const d = String(data.getFullYear()) + "-" + String(data.getMonth()+1).padStart(2, '0') + "-" + String(data.getDate()).padStart(2, '0');
-    
-    return d;
+    data.setHours(0, 0, 0, 0); 
+    return data;
+    //const d = String(data.getFullYear()) + "-" + String(data.getMonth()+1).padStart(2, '0') + "-" + String(data.getDate()).padStart(2, '0');
+    //return d;
 }
-function minDataFim(){
+
+/*function minDataFim(){
     document.getElementById("fieldDataFim").min = String(document.getElementById("fieldDataInicio").value);
 }
 window.minDataFim = minDataFim;
@@ -18,15 +20,21 @@ function minDataEvento(){
     document.getElementById("fieldDataEvento").min = String(dataFim.getFullYear()) + '-' + String(dataFim.getMonth()+1).padStart(2, '0') + '-' + String(dataFim.getDate() + 1).padStart(2, '0');
 }
 window.minDataEvento = minDataEvento;
+*/
+
 function toDate(stringData){
     return new Date(stringData + "T00:00:00");
 }
 
 
+
+
 function isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota){
     var valid = false;
+    console.log("DATA HOJE", dataDeHoje())
+    console.log(toDate(dataInicio))
 
-    if(titulo.length > 0 && descricao.length > 0 && dataInicio.length > 0 && dataFim.length > 0 && valorCota.length > 0 && valorCota >= 1){
+    if(titulo.length > 0 && descricao.length > 0 && dataInicio.length > 0 && dataFim.length > 0 && valorCota.length > 0 && valorCota >= 1 && toDate(dataInicio)>=dataDeHoje()-1 && toDate(dataFim)>=toDate(dataInicio) && toDate(dataEvento)>=toDate(dataFim)){
         valid = true;
     }
     else if(titulo.length == 0 && descricao.length == 0 && dataInicio.length == 0 && dataFim.length == 0 && valorCota.length == 0){
@@ -38,14 +46,14 @@ function isValid(titulo, descricao, dataInicio, dataFim, dataEvento, valorCota){
     else if(descricao.length == 0){
         showErrorMessage("Insira uma descrição.");
     }
-    else if(dataInicio.length == 0){
-        showErrorMessage("Insira a data de início.");
+    else if(dataInicio.length == 0 || toDate(dataInicio)<dataDeHoje()){
+        showErrorMessage("Data de início inválida.");
     }
-    else if(dataFim.length == 0){
-        showErrorMessage("Insira a data de término.");
+    else if(dataFim.length == 0 || toDate(dataFim)<toDate(dataInicio)){
+        showErrorMessage("Data de término inválida.");
     }
-    else if(dataEvento.length == 0){
-        showErrorMessage("Insira a data do evento");
+    else if(dataEvento.length == 0 || toDate(dataEvento)<toDate(dataFim)){
+        showErrorMessage("Data de evento inválida");
     }
     else if(valorCota < 1){
         showErrorMessage("Insira um valor maior que R$1,00.");
@@ -106,11 +114,14 @@ window.onload = function(){
     if(window.location.pathname.includes("createEvent.html")){
         botaoSearch();
 
+       /*
         let dataInicio = document.getElementById("fieldDataInicio");
-        dataInicio.min = dataDeHoje();
+
+         dataInicio.min = dataDeHoje();
+        
         let dataFim = document.getElementById("fieldDataFim");
         let dataEvento = document.getElementById("fieldDataEvento");
-        
+       
         function checkDataInicio(){
             if(dataInicio.value.length == 0 || toDate(dataInicio.value) > toDate(dataFim.value)){
                 dataFim.disabled = 'disabled';
@@ -134,12 +145,12 @@ window.onload = function(){
             else{
                 dataEvento.disabled = false;
             }
-        }
+        }*/
 
-        checkDataInicio();
-        checkDataFim();
+        //checkDataInicio();
+        //checkDataFim();
 
-        dataInicio.addEventListener("change", checkDataInicio);
-        dataFim.addEventListener("change", checkDataFim);
+        //dataInicio.addEventListener("change", checkDataInicio);
+        //dataFim.addEventListener("change", checkDataFim);
     }
 };
