@@ -9,9 +9,11 @@ Grupo:
 
 #
 Adicionar na pasta backend um arquivo .env contendo:
+    ```
     ORACLE_USER="usuario do banco"
     ORACLE_PASSWORD="senha de usuario do banco"
     ORACLE_CONN_STR="string de conexão do banco"
     EMAIL_ADM="japabetadm@gmail.com"
     EMAIL_PASS="cakaivmbayuwtupr"  
+    ```
 #
