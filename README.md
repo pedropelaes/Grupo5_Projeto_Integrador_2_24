@@ -22,3 +22,5 @@ Editar o arquivo IP.js localizado na pasta frontend ajustando para seu IP:
     window.IP = "http://SEU_IP:3000". 
     ```
 #
+Abrir a pasta backend no cmd e executar o comando "npm run dev"
+#
