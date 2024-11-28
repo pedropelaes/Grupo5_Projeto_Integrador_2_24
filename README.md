@@ -17,3 +17,9 @@ Adicionar na pasta backend um arquivo .env contendo:
     EMAIL_PASS="cakaivmbayuwtupr"  
     ```
 #
+#
+Editar o arquivo IP.js ajustando para seu IP:
+    ```
+    window.IP = "http://SEU_IP:3000"; 
+    ```
+#
