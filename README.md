@@ -19,6 +19,6 @@ Adicionar na pasta backend um arquivo .env contendo:
 #
 Editar o arquivo IP.js localizado na pasta frontend ajustando para seu IP:
     ```
-    window.IP = "http://SEU_IP:3000"; 
+    window.IP = "http://SEU_IP:3000". 
     ```
 #
