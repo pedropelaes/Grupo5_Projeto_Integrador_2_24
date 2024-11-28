@@ -54,7 +54,7 @@ async function PerformMyEvents(){
                             <p class="card-text">${events["Resultado da busca"][i]["DESCRICAO"]}</p>
                             <a href="#" class="btn btn-danger" type="button" onclick="bet('${(events["Resultado da busca"][i]["TITULO"])}')"><i class="fas fa-coins"></i> Apostar</a>
                             <a href="#" class="btn btn-vermais"><i class="fas fa-search"></i> Ver mais</a>
-                            <a href="#" class="btn btn-delete"><i class="fas fa-search"></i>Deletar</a>
+                            <a href="#" class="btn btn-delete  w-100 mt-1"><i class="fas fa-solid fa-trash"></i> Deletar</a>
                     </div>`;
                 let eventoVerMais = event.querySelector(".btn-vermais");
                 let eventoDeletar = event.querySelector(".btn-delete")
@@ -136,7 +136,7 @@ function showModalDelete(evento) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Deseja mesmo deletar o evento ${evento["TITULO"]}?:</p>
+                    <p>Deseja mesmo deletar o evento ${evento["TITULO"]}?</p>
                     <p>${evento["DESCRICAO"]}</p>
                     <p>Período de apostas: ${evento["DATA_INICIO"]} - ${evento["DATA_FIM"]}</p>
                     <p>Data do evento: ${evento["DATA_EVENTO"]}</p>

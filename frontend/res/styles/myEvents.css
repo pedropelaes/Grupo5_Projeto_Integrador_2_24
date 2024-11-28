@@ -18,25 +18,23 @@
 }
 
 .btn-delete {
-    background-color: #a32f2f !important; /* Change the background color */
-    border-color: #000000 !important;   /* Change the border color */
-    color: #ffffff !important;         /* Adjust the text color if needed */
+    background-color: #e22525 !important; 
+    color: #ffffff !important;
     color: black !important;
 }
 
 .btn-delete:hover {
-    background-color: #680606 !important; /* Slightly darker shade for hover effect */
+    background-color: #ce2323 !important;
     border-color: #000000 !important;
 }
 
 .btn-delete2 {
-    background-color: #a32f2f !important; /* Change the background color */
-    border-color: #000000 !important;   /* Change the border color */
-    color: #ffffff !important;         /* Adjust the text color if needed */
+    background-color: #e22525 !important; 
+    color: #ffffff !important;         
     color: black !important;
 }
 
 .btn-delete2:hover {
-    background-color: #680606 !important; /* Slightly darker shade for hover effect */
+    background-color: #ce2323 !important; 
     border-color: #000000 !important;
 }

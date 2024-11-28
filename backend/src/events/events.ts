@@ -296,7 +296,7 @@ export namespace EventsManager {
                 const del = await deletarEvento(dTitulo, user_id);
                 if(del === true){
                     res.statusCode = 200;
-                    res.send(`Evento deletado. Id: ${dTitulo}`);
+                    res.send(`Evento deletado. Nome: ${dTitulo}`);
                 }else{
                     res.statusCode = 403;
                     res.send(`Permissão para deletar evento negada. Evento não pertence a usuario.`);
